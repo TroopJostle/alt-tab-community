@@ -4,12 +4,9 @@ import Cocoa
 final class QAMenu: NSPanel {
     static var shared: QAMenu?
     private let stack = NSStackView()
-    private let proSectionContent = NSStackView()
-    private var proDisclosure: NSButton!
 
     private static let autosaveName = "QAMenu"
     private static let openSettingsOnLaunchKey = "debug.openSettingsOnLaunch"
-    private static let proSectionExpandedKey = "debug.proSectionExpanded"
     private static let graphEnabledKey = "debug.graphEnabled"
     private static let sectionSpacing: CGFloat = 16
 
@@ -102,143 +99,15 @@ final class QAMenu: NSPanel {
         topRow.trailingAnchor.constraint(equalTo: stack.trailingAnchor, constant: -stack.edgeInsets.right).isActive = true
         stack.addArrangedSubview(graphCheckbox)
         stack.addArrangedSubview(langDropdown)
-        addProTransitionButtons()
+        let mockFreshInstallButton = makeButton("Mock fresh install") { Self.mockFreshInstall() }
+        stack.addArrangedSubview(mockFreshInstallButton)
     }
 
-    /// Wipe every UserDefaults suite the app uses plus every keychain entry under the license service,
-    /// so the next launch behaves exactly like a brand-new install.
+    /// Wipe every UserDefaults suite the app uses, so the next launch behaves exactly like a
+    /// brand-new install.
     private static func mockFreshInstall() {
         UserDefaults.standard.removePersistentDomain(forName: App.bundleIdentifier)
-        UserDefaults.standard.removePersistentDomain(forName: LicenseManager.defaultsSuiteName)
         UserDefaults.standard.removePersistentDomain(forName: "\(App.bundleIdentifier).usage")
-        SystemKeychain(service: LicenseManager.keychainService).removeAll()
-    }
-
-    private func addProTransitionButtons() {
-        let isExpanded = UserDefaults.standard.object(forKey: Self.proSectionExpandedKey) as? Bool ?? false
-        proDisclosure = NSButton(title: "", target: nil, action: nil)
-        proDisclosure.bezelStyle = .disclosure
-        proDisclosure.setButtonType(.pushOnPushOff)
-        proDisclosure.state = isExpanded ? .on : .off
-        proDisclosure.onAction = { [weak self] _ in
-            guard let self else { return }
-            let expanded = self.proDisclosure.state == .on
-            UserDefaults.standard.set(expanded, forKey: Self.proSectionExpandedKey)
-            self.proSectionContent.isHidden = !expanded
-            self.sizeToFitContent()
-        }
-        if let prior = stack.arrangedSubviews.last {
-            stack.setCustomSpacing(Self.sectionSpacing, after: prior)
-        }
-        let proHeader = NSStackView(views: [proDisclosure, sectionLabel("Pro Transition")])
-        proHeader.orientation = .horizontal
-        proHeader.spacing = 4
-        stack.addArrangedSubview(proHeader)
-        stack.setCustomSpacing(Self.sectionSpacing, after: proHeader)
-
-        proSectionContent.orientation = .vertical
-        proSectionContent.alignment = .leading
-        proSectionContent.spacing = 8
-        proSectionContent.isHidden = !isExpanded
-        stack.addArrangedSubview(proSectionContent)
-
-        proSectionContent.addArrangedSubview(sectionLabel("Mock Day:"))
-        let mockDayRow = NSStackView(views: [
-            makeButton("1") { Self.mockDay(1) },
-            makeButton("13") { Self.mockDay(13) },
-            makeButton("15 (expired)") { Self.mockDay(15) },
-            makeButton("21") { Self.mockDay(21) },
-            makeButton("35") { Self.mockDay(35) },
-            makeButton("Pro") { LicenseManager.shared.mockProUser() },
-        ])
-        mockDayRow.orientation = .horizontal
-        mockDayRow.spacing = 4
-        proSectionContent.addArrangedSubview(mockDayRow)
-        proSectionContent.setCustomSpacing(Self.sectionSpacing, after: mockDayRow)
-
-        proSectionContent.addArrangedSubview(sectionLabel("Show window/popover for Day:"))
-
-        let showRow1 = NSStackView(views: [
-            makeButton("1 Welcome (new)") {
-                Day1WelcomeLetterWindow.shared?.close()
-                Day1WelcomeLetterWindow.shared = nil
-                Day1WelcomeLetterWindow.show(forceFreshInstall: true)
-            },
-            makeButton("1 Welcome (upgrade)") {
-                Day1WelcomeLetterWindow.shared?.close()
-                Day1WelcomeLetterWindow.shared = nil
-                Day1WelcomeLetterWindow.show(forceFreshInstall: false)
-            },
-            makeButton("4 Tour") { Day4TourPopover.show() },
-            makeButton("12 HeadsUp") { Day12HeadsUpPopover.show() },
-        ])
-        showRow1.orientation = .horizontal
-        showRow1.spacing = 4
-        proSectionContent.addArrangedSubview(showRow1)
-
-        let showRow2 = NSStackView(views: [
-            makeButton("15 FullUpgrade") { ProTransitionManager.shared.showFullUpgradeWindow() },
-            makeButton("15 Proactive") { ProTransitionManager.shared.showProactiveDay15Window() },
-            makeButton("15 HardGate") { Day15HardGatePopover.show() },
-        ])
-        showRow2.orientation = .horizontal
-        showRow2.spacing = 4
-        proSectionContent.addArrangedSubview(showRow2)
-
-        let showRow3 = NSStackView(views: [
-            makeButton("21 Reminder") { Day21ReminderPopover.show() },
-            makeButton("35 Final") { Day35FinalWindow.show() },
-        ])
-        showRow3.orientation = .horizontal
-        showRow3.spacing = 4
-        proSectionContent.addArrangedSubview(showRow3)
-        proSectionContent.setCustomSpacing(Self.sectionSpacing, after: showRow3)
-
-        proSectionContent.addArrangedSubview(sectionLabel("Reset:"))
-        let resetRow1 = NSStackView(views: [
-            makeButton("Free Pass") {
-                ProTransitionManager.shared.freePassUsed = false
-                Logger.debug { "freePassUsed reset to false" }
-            },
-            makeButton("Day4 Tour") {
-                ProTransitionManager.shared.hasSeenDay4Tour = false
-                Logger.debug { "hasSeenDay4Tour reset to false" }
-            },
-            makeButton("Switcher Trigger") {
-                ProTransitionManager.shared.hasTriggeredPostExpirationSwitcher = false
-                Logger.debug { "hasTriggeredPostExpirationSwitcher reset to false" }
-            },
-        ])
-        resetRow1.orientation = .horizontal
-        resetRow1.spacing = 4
-        proSectionContent.addArrangedSubview(resetRow1)
-
-        let resetRow2 = NSStackView(views: [
-            makeButton("Toggle Opt-Out") {
-                let mgr = ProTransitionManager.shared
-                mgr.userOptedOut = !mgr.userOptedOut
-                Logger.debug { "userOptedOut = \(mgr.userOptedOut)" }
-            },
-            makeButton("Revalidate") { LicenseManager.shared.revalidateWithServer() },
-            makeButton("Mock fresh install") { Self.mockFreshInstall() },
-        ])
-        resetRow2.orientation = .horizontal
-        resetRow2.spacing = 4
-        proSectionContent.addArrangedSubview(resetRow2)
-    }
-
-    /// Mock passage of time to a specific day. Resets transition state and marks earlier prompts
-    /// as already seen so they don't re-fire. Mock Day 15 lands on the post-trial *grace* period
-    /// (trial expired, no Day15 window shown yet) so QA can click `Day15 Proactive` or
-    /// `Day15 FullUpgrade` to exercise each path, then observe the locked state after.
-    private static func mockDay(_ day: Int) {
-        let mgr = ProTransitionManager.shared
-        mgr.resetAllState()
-        if day > 1 { mgr.hasSeenWelcome = true }
-        if day > 4 { mgr.hasSeenDay4Tour = true }
-        if day > 12 { mgr.hasSeenDay12 = true }
-        LicenseManager.shared.mockTrialDay(day)
-        Menubar.menubarIconCallback(nil)
     }
 
     private func sectionLabel(_ text: String) -> NSTextField {

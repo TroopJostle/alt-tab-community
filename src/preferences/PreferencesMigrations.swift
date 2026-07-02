@@ -15,9 +15,9 @@ class PreferencesMigrations {
     }
 
     static func migratePreferences() {
+        restoreProSnapshotsAndRemoveLicenseSuite()
         let preferencesKey = "preferencesVersion"
         let existingVersion = Self.defaults.string(forKey: preferencesKey)
-        ProTransitionState.markFreshInstallIfUnknown(existingVersion == nil)
         if let versionInPlist = existingVersion {
             if versionInPlist != "#VERSION#" && versionInPlist.compare(App.version, options: .numeric) != .orderedDescending {
                 updateToNewPreferences(versionInPlist)
@@ -61,6 +61,30 @@ class PreferencesMigrations {
                 migration()
             }
         }
+    }
+
+    /// The removed Pro tier used to downgrade gated preferences when a trial expired, snapshotting
+    /// the user's real choice in a side suite. Restore those choices, then wipe the whole suite
+    /// (trial dates, Day-X flags, license validation timestamps) so this runs at most once.
+    static func restoreProSnapshotsAndRemoveLicenseSuite() {
+        let suiteName = "\(App.bundleIdentifier).license"
+        guard let licenseSuite = UserDefaults(suiteName: suiteName),
+              licenseSuite.persistentDomain(forName: suiteName) != nil else { return }
+        let rememberedToPreference: [(String, String, Int)] = [
+            ("rememberedAppearanceStyle", "appearanceStyle", AppearanceStylePreference.allCases.count),
+            ("rememberedAppearanceSize", "appearanceSize", AppearanceSizePreference.allCases.count),
+            ("rememberedShortcutStyle", "shortcutStyle", ShortcutStylePreference.allCases.count),
+            ("rememberedAppearanceStyleOverride", "appearanceStyleOverride", AppearanceStylePreference.allCases.count),
+            ("rememberedAppearanceSizeOverride", "appearanceSizeOverride", AppearanceSizePreference.allCases.count),
+            ("rememberedShortcutStyleOverride", "shortcutStyleOverride", ShortcutStylePreference.allCases.count),
+        ]
+        for (rememberedKey, preferenceKey, caseCount) in rememberedToPreference {
+            if let index = licenseSuite.object(forKey: "proTransition.\(rememberedKey)") as? Int,
+               (0..<caseCount).contains(index) {
+                Self.defaults.set(String(index), forKey: preferenceKey)
+            }
+        }
+        licenseSuite.removePersistentDomain(forName: suiteName)
     }
 
     static func shouldRun(_ versionInPlist: String, _ versionThreshold: String) -> Bool {

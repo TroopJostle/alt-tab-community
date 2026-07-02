@@ -1,12 +1,11 @@
 import Cocoa
 import ShortcutRecorder
 
-// Stubs so ProBadgeView.swift compiles in the test target. The real Symbols
+// Stubs so widgets like SidebarList.swift compile in the test target. The real Symbols
 // enum and NSImage.fromSymbol live in TileFontIconView.swift and
 // HelperExtensions.swift respectively, neither of which is in the test
 // target's source membership. Tests never actually render an icon, so a
-// minimal stub satisfying the signatures is enough — isTemplate = true
-// matches the production contract that ProBadgeViewSegmentTests asserts on.
+// minimal stub satisfying the signatures is enough.
 enum Symbols: String {
     case stub = ""
 }

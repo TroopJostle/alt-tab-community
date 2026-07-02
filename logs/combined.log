@@ -1,0 +1,5 @@
+{
+  message: 'No proxy URL provided, using direct connection',
+  level: 'info',
+  timestamp: '2026-07-02 15:09:25'
+}

@@ -353,8 +353,21 @@ extension App {
     static let version = "99.99.99"
 }
 
-enum ProTransitionState {
-    static func markFreshInstallIfUnknown(_ value: Bool) {}
+// Faithful: same case order/count as MacroPreferences.swift, so the Pro-snapshot restore
+// migration validates remembered indices against the real ranges.
+// (`ShortcutStylePreference` is already declared in Mocks.swift.)
+
+enum AppearanceStylePreference: CaseIterable {
+    case thumbnails
+    case appIcons
+    case titles
+}
+
+enum AppearanceSizePreference: CaseIterable {
+    case small
+    case medium
+    case large
+    case auto
 }
 
 enum AxError: Error {

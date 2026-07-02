@@ -47,15 +47,6 @@ enum ShortcutActions {
     }
 
     static func execute(_ id: String) {
-        // Gate *pressing* a Pro-only shortcut slot (index >= 1). Without this, configured Cmd+Tab
-        // variants past the first keep working after Day15 lock. Mirrors the `.lockSearch` /
-        // `.search` gates in `TilesView` and the slot-add gate in `addShortcutSlot()`.
-        if id.hasPrefix("holdShortcut") || id.hasPrefix("nextWindowShortcut") {
-            let index = Preferences.nameToIndex(id)
-            if index >= 1 {
-                if !ProFeature.extraShortcut(index: index).attemptUse() { return }
-            }
-        }
         if let action = find(id) {
             action.perform()
             return

@@ -1,0 +1,109 @@
+{
+  error: Error: API key is required. Set FIRECRAWL_API_KEY env or pass apiKey.
+      at new FirecrawlClient (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js:725:13)
+      at new Firecrawl (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js:2234:5)
+      at new FirecrawlMCPServer (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js:24:26)
+      at file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js:784:16
+      at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+      at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:654:26)
+      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5),
+  level: 'error',
+  message: 'uncaughtException: API key is required. Set FIRECRAWL_API_KEY env or pass apiKey.\n' +
+    'Error: API key is required. Set FIRECRAWL_API_KEY env or pass apiKey.\n' +
+    '    at new FirecrawlClient (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js:725:13)\n' +
+    '    at new Firecrawl (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js:2234:5)\n' +
+    '    at new FirecrawlMCPServer (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js:24:26)\n' +
+    '    at file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js:784:16\n' +
+    '    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)\n' +
+    '    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:654:26)\n' +
+    '    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)',
+  stack: 'Error: API key is required. Set FIRECRAWL_API_KEY env or pass apiKey.\n' +
+    '    at new FirecrawlClient (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js:725:13)\n' +
+    '    at new Firecrawl (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js:2234:5)\n' +
+    '    at new FirecrawlMCPServer (file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js:24:26)\n' +
+    '    at file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js:784:16\n' +
+    '    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)\n' +
+    '    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:654:26)\n' +
+    '    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)',
+  exception: true,
+  date: 'Thu Jul 02 2026 15:09:25 GMT+0400 (Georgia Standard Time)',
+  process: {
+    pid: 13603,
+    uid: 501,
+    gid: 20,
+    cwd: '/Users/tmpjolley/Documents/projects/random/opensource/alt-tab-community',
+    execPath: '/Users/tmpjolley/.nvm/versions/node/v25.2.1/bin/node',
+    version: 'v25.2.1',
+    argv: [
+      '/Users/tmpjolley/.nvm/versions/node/v25.2.1/bin/node',
+      '/Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js'
+    ],
+    memoryUsage: {
+      rss: 86507520,
+      heapTotal: 23134208,
+      heapUsed: 14674216,
+      external: 3603742,
+      arrayBuffers: 35733
+    }
+  },
+  os: { loadavg: [ 4.40625, 5.0478515625, 8.21337890625 ], uptime: 1547 },
+  trace: [
+    {
+      column: 13,
+      file: 'file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js',
+      function: 'new FirecrawlClient',
+      line: 725,
+      method: null,
+      native: false
+    },
+    {
+      column: 5,
+      file: 'file:///Users/tmpjolley/Documents/tmp/searxng-research-server/node_modules/@mendable/firecrawl-js/dist/index.js',
+      function: 'new Firecrawl',
+      line: 2234,
+      method: null,
+      native: false
+    },
+    {
+      column: 26,
+      file: 'file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js',
+      function: 'new FirecrawlMCPServer',
+      line: 24,
+      method: null,
+      native: false
+    },
+    {
+      column: 16,
+      file: 'file:///Users/tmpjolley/Documents/tmp/searxng-research-server/dist/index.js',
+      function: null,
+      line: 784,
+      method: null,
+      native: false
+    },
+    {
+      column: 25,
+      file: 'node:internal/modules/esm/module_job',
+      function: 'ModuleJob.run',
+      line: 413,
+      method: 'run',
+      native: false
+    },
+    {
+      column: 26,
+      file: 'node:internal/modules/esm/loader',
+      function: 'async onImport.tracePromise.__proto__',
+      line: 654,
+      method: '__proto__',
+      native: false
+    },
+    {
+      column: 5,
+      file: 'node:internal/modules/run_main',
+      function: 'async asyncRunEntryPointWithESMLoader',
+      line: 101,
+      method: null,
+      native: false
+    }
+  ],
+  timestamp: '2026-07-02 15:09:25'
+}

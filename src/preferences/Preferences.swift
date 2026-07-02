@@ -126,8 +126,8 @@ class Preferences {
     static var settingsWindowShownOnFirstLaunch: Bool { CachedUserDefaults.bool("settingsWindowShownOnFirstLaunch") }
 
     // macro values
-    static var appearanceStyle: AppearanceStylePreference { ProGatedPreferences.appearanceStyle.read() }
-    static var appearanceSize: AppearanceSizePreference { ProGatedPreferences.appearanceSize.read() }
+    static var appearanceStyle: AppearanceStylePreference { CachedUserDefaults.macroPref("appearanceStyle", AppearanceStylePreference.allCases) }
+    static var appearanceSize: AppearanceSizePreference { CachedUserDefaults.macroPref("appearanceSize", AppearanceSizePreference.allCases) }
     static var appearanceTheme: AppearanceThemePreference { CachedUserDefaults.macroPref("appearanceTheme", AppearanceThemePreference.allCases) }
     // periphery:ignore
     static var theme: ThemePreference { ThemePreference.macOs/*CachedUserDefaults.macroPref("theme", ThemePreference.allCases)*/ }
@@ -152,7 +152,7 @@ class Preferences {
     static func windowOrder(_ i: Int) -> WindowOrderPreference { CachedUserDefaults.macroPref(indexToName("windowOrder", i), WindowOrderPreference.allCases) }
     static func groupApps(_ i: Int) -> GroupAppsPreference { CachedUserDefaults.macroPref(indexToName("showAppsOrWindows", i), GroupAppsPreference.allCases) }
     static func groupTabs(_ i: Int) -> GroupTabsPreference { CachedUserDefaults.macroPref(indexToName("showTabsAsWindows", i), GroupTabsPreference.allCases) }
-    static var shortcutStyle: ShortcutStylePreference { ProGatedPreferences.shortcutStyle.read() }
+    static var shortcutStyle: ShortcutStylePreference { CachedUserDefaults.macroPref("shortcutStyle", ShortcutStylePreference.allCases) }
     static var menubarIcon: MenubarIconPreference { CachedUserDefaults.macroPref("menubarIcon", MenubarIconPreference.allCases) }
     static var menubarIconShown: Bool { CachedUserDefaults.bool("menubarIconShown") }
     static var language: LanguagePreference { CachedUserDefaults.macroPref("language", LanguagePreference.allCases) }
@@ -276,25 +276,9 @@ class Preferences {
         all[indexToName(baseName, index)] != nil
     }
 
-    /// Remove an override (the user "unlinks" it from the global). For the 3 Pro-gated overrides on
-    /// shortcut 0, also clear the remembered Pro index in `ProTransitionState` — otherwise an
-    /// unrelated unlock pass would re-create the override from that snapshot.
+    /// Remove an override (the user "unlinks" it from the global).
     static func removeOverride(_ baseName: String, _ index: Int) {
         remove(indexToName(baseName, index))
-        if index == 0, let rememberedKey = overrideRememberedKey(baseName) {
-            ProTransitionState.setInt(rememberedKey, nil)
-        }
-    }
-
-    /// Maps the 3 Pro-gated index-0 override base names to their remembered-key in `ProTransitionState`.
-    /// Returns nil for the 2 non-gated overrides and for index >= 1.
-    private static func overrideRememberedKey(_ baseName: String) -> String? {
-        switch baseName {
-        case "appearanceStyleOverride": return ProGatedPreferences.appearanceStyleOverride0.gate?.rememberedKey
-        case "appearanceSizeOverride": return ProGatedPreferences.appearanceSizeOverride0.gate?.rememberedKey
-        case "shortcutStyleOverride": return ProGatedPreferences.shortcutStyleOverride0.gate?.rememberedKey
-        default: return nil
-        }
     }
 
     /// Indices (0..shortcutCount) whose stored override value differs from the current global.
@@ -310,13 +294,11 @@ class Preferences {
 
     static func effectiveAppearanceStyle(_ index: Int) -> AppearanceStylePreference {
         guard hasOverride("appearanceStyleOverride", index) else { return appearanceStyle }
-        if index == 0 { return ProGatedPreferences.appearanceStyleOverride0.read() }
         return CachedUserDefaults.macroPref(indexToName("appearanceStyleOverride", index), AppearanceStylePreference.allCases)
     }
 
     static func effectiveAppearanceSize(_ index: Int) -> AppearanceSizePreference {
         guard hasOverride("appearanceSizeOverride", index) else { return appearanceSize }
-        if index == 0 { return ProGatedPreferences.appearanceSizeOverride0.read() }
         return CachedUserDefaults.macroPref(indexToName("appearanceSizeOverride", index), AppearanceSizePreference.allCases)
     }
 
@@ -327,7 +309,6 @@ class Preferences {
 
     static func effectiveShortcutStyle(_ index: Int) -> ShortcutStylePreference {
         guard hasOverride("shortcutStyleOverride", index) else { return shortcutStyle }
-        if index == 0 { return ProGatedPreferences.shortcutStyleOverride0.read() }
         return CachedUserDefaults.macroPref(indexToName("shortcutStyleOverride", index), ShortcutStylePreference.allCases)
     }
 

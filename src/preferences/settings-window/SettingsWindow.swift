@@ -130,90 +130,6 @@ private final class SettingsSidebarCellView: NSTableCellView {
     }
 }
 
-final class UpgradeButton: ProGradientButton {
-    private var heightConstraint: NSLayoutConstraint!
-
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        heightConstraint = heightAnchor.constraint(equalToConstant: 24)
-        heightConstraint.isActive = true
-        refreshTitle()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("Class only supports programmatic initialization")
-    }
-
-    override func layout() {
-        super.layout()
-        refreshEmailTooltip()
-    }
-
-    func refreshTitle() {
-        let result = NSMutableAttributedString()
-        let mainAttrs: [NSAttributedString.Key: Any] = [
-            .foregroundColor: NSColor.white,
-            .font: NSFont.systemFont(ofSize: 13, weight: .semibold),
-        ]
-        let secondaryAttrs: [NSAttributedString.Key: Any] = [
-            .foregroundColor: NSColor.white.withAlphaComponent(0.8),
-            .font: NSFont.systemFont(ofSize: 11, weight: .regular),
-        ]
-        let state = LicenseManager.shared.state
-        if case .pro = state {
-            let title = LicenseManager.shared.isLifetimeVariant
-                ? NSLocalizedString("Pro Lifetime activated", comment: "")
-                : NSLocalizedString("Pro activated", comment: "")
-            if let email = LicenseManager.shared.customerEmail {
-                result.append(NSAttributedString(string: title, attributes: secondaryAttrs))
-                result.append(NSAttributedString(string: "\n", attributes: secondaryAttrs))
-                result.append(NSAttributedString(string: email, attributes: mainAttrs))
-            } else {
-                result.append(NSAttributedString(string: title, attributes: mainAttrs))
-            }
-        } else {
-            let subtitleText: String
-            if case .trial(let daysRemaining) = state {
-                subtitleText = String(format: NSLocalizedString("Trial: %d days remaining", comment: ""), daysRemaining)
-            } else if case .proExpired = state {
-                subtitleText = NSLocalizedString("License doesn't cover this version", comment: "")
-            } else {
-                subtitleText = NSLocalizedString("Trial expired", comment: "")
-            }
-            result.append(NSAttributedString(string: subtitleText, attributes: secondaryAttrs))
-            result.append(NSAttributedString(string: "\n", attributes: secondaryAttrs))
-            result.append(NSAttributedString(string: NSLocalizedString("Get Pro", comment: ""), attributes: mainAttrs))
-        }
-        let style = NSMutableParagraphStyle()
-        style.alignment = .center
-        style.lineBreakMode = .byTruncatingTail
-        result.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: result.length))
-        attributedTitle = result
-        if #available(macOS 10.14, *) {
-            contentTintColor = .white
-        }
-        let hasSecondLine: Bool
-        if case .pro = state, LicenseManager.shared.customerEmail == nil {
-            hasSecondLine = false
-        } else {
-            hasSecondLine = true
-        }
-        heightConstraint.constant = hasSecondLine ? 35 : 24
-        refreshEmailTooltip()
-    }
-
-    private func refreshEmailTooltip() {
-        guard case .pro = LicenseManager.shared.state,
-              let email = LicenseManager.shared.customerEmail else {
-            toolTip = nil
-            return
-        }
-        let attrs: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 13, weight: .semibold)]
-        let emailWidth = (email as NSString).size(withAttributes: attrs).width
-        toolTip = emailWidth > bounds.width ? email : nil
-    }
-}
-
 private final class SettingsFlippedView: NSView {
     override var isFlipped: Bool { true }
 }
@@ -300,16 +216,11 @@ class SettingsWindow: NSWindow {
     private let rightScrollView = NSScrollView()
     private let sectionsDocumentView = SettingsFlippedView(frame: .zero)
     private let sectionsStack = NSStackView()
-    private let upgradeButton = UpgradeButton()
     private let quitButton = NSButton(title: String(format: NSLocalizedString("Quit %@", comment: "%@ is AltTab"), App.name), target: nil, action: #selector(NSApplication.terminate(_:)))
     private var sections = [SettingsSection]()
     private var visibleSections = [SettingsSection]()
     private var selectedSectionId: String?
-    private var upgradeContentView: NSView?
-    private var isShowingUpgradeView = false
     private var sectionsStackBottomConstraint: NSLayoutConstraint!
-    private var upgradeViewBottomConstraint: NSLayoutConstraint?
-    private var hasPlayedShine = false
     private var sheetHighlightTargets = [ObjectIdentifier: [SettingsSearchHighlightTarget]]()
     private var liveResizeOriginX: CGFloat?
     private var sectionSelectionTriggerRatio = SettingsWindow.sectionSelectionTriggerRatioWhenScrollingDown
@@ -395,7 +306,6 @@ class SettingsWindow: NSWindow {
     private func setupSidebar() {
         setupSearchField(sidebarContainer)
         setupQuitButton(sidebarContainer)
-        setupUpgradeButton(sidebarContainer)
         setupSidebarTable(sidebarContainer)
         // Match macOS System Settings: Tab cycles between the search field and the sidebar
         // table only. The nextValidKeyView overrides on these two subclasses keep AppKit's
@@ -497,30 +407,8 @@ class SettingsWindow: NSWindow {
             // too far in.
             sidebarScrollView.leadingAnchor.constraint(equalTo: parent.leadingAnchor),
             sidebarScrollView.trailingAnchor.constraint(equalTo: parent.trailingAnchor),
-            sidebarScrollView.bottomAnchor.constraint(equalTo: upgradeButton.topAnchor, constant: -10),
+            sidebarScrollView.bottomAnchor.constraint(equalTo: quitButton.topAnchor, constant: -10),
         ])
-    }
-
-    private func setupUpgradeButton(_ parent: NSView) {
-        upgradeButton.target = self
-        upgradeButton.action = #selector(upgradeButtonClicked)
-        upgradeButton.translatesAutoresizingMaskIntoConstraints = false
-        parent.addSubview(upgradeButton)
-        // Align with the sidebar source-list highlight: the scroll view sits flush against the
-        // sidebar edges and `.sourceList` adds its own ~10pt internal inset, so the highlight
-        // pill ends up at `sidebarHorizontalPadding` from each edge — same as the search field.
-        // The upgrade button matches that same edge.
-        let inset = Self.sidebarHorizontalPadding
-        NSLayoutConstraint.activate([
-            upgradeButton.centerXAnchor.constraint(equalTo: parent.centerXAnchor),
-            upgradeButton.bottomAnchor.constraint(equalTo: quitButton.topAnchor, constant: -20),
-            upgradeButton.leadingAnchor.constraint(equalTo: parent.leadingAnchor, constant: inset),
-            upgradeButton.trailingAnchor.constraint(equalTo: parent.trailingAnchor, constant: -inset),
-        ])
-    }
-
-    @objc private func upgradeButtonClicked() {
-        showUpgradeView()
     }
 
     private func setupQuitButton(_ parent: NSView) {
@@ -550,8 +438,8 @@ class SettingsWindow: NSWindow {
 
     private func addSection(_ definition: SettingsSectionDefinition) {
         // Wrap the tab's view construction in an `indexed { ... }` scope so that every factory
-        // call inside (`LabelAndControl.makeDropdown`, `TableGroupView.makeText`, `ProBadgeView`,
-        // etc.) pushes its searchable strings and highlight targets into a per-section `Builder`.
+        // call inside (`LabelAndControl.makeDropdown`, `TableGroupView.makeText`, etc.) pushes
+        // its searchable strings and highlight targets into a per-section `Builder`.
         // The harvested results become the section's `searchableStrings` / `highlightTargets`
         // directly — no second-pass walk over the view tree. The section title is also produced
         // here so its label registration is captured by the same indexed scope.
@@ -627,8 +515,8 @@ class SettingsWindow: NSWindow {
 
     /// Re-publish a section's dynamic search content (its sidebar rows) into the index. A section's
     /// rows are rebuilt *outside* the build-time `indexed { }` scope (e.g. ControlsTab's
-    /// `refreshShortcutRows` from the +/- buttons, a recorder edit, an input-source change, or the
-    /// pro-lock observer), so the rows' own `registerSearchContent` no-ops there. This re-opens a
+    /// `refreshShortcutRows` from the +/- buttons, a recorder edit, or an input-source change),
+    /// so the rows' own `registerSearchContent` no-ops there. This re-opens a
     /// scope, re-registers the *current* rows, and swaps them into the section wholesale — no stale
     /// targets for removed rows, and freshly-added rows become searchable. Re-applies the active
     /// query so rebuilt rows light up immediately. Called once per section at the end of
@@ -673,10 +561,6 @@ class SettingsWindow: NSWindow {
         // targets for since-removed rows out of the section's fixed base — that staleness was the
         // "typing 'sho' no longer highlights Shortcut N" bug.
         if skipSidebarRows, root is SidebarListRow { return }
-        if root is ProBadgeView {
-            textValues.append(NSLocalizedString("Pro", comment: ""))
-            return
-        }
         if let textField = root as? NSTextField {
             let value = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
             if !value.isEmpty {
@@ -1060,7 +944,6 @@ class SettingsWindow: NSWindow {
     }
 
     @objc private func contentViewBoundsDidChange(_ notification: Notification) {
-        guard !isShowingUpgradeView else { return }
         let currentY = rightScrollView.contentView.bounds.minY
         if isProgrammaticScrollInProgress {
             lastContentScrollY = currentY
@@ -1116,53 +999,7 @@ class SettingsWindow: NSWindow {
         }
     }
 
-    func showUpgradeView() {
-        guard !isShowingUpgradeView else { return }
-        isShowingUpgradeView = true
-        sidebarTableView.deselectAll(nil)
-        selectedSectionId = nil
-        sectionsStackBottomConstraint.isActive = false
-        sectionsStack.isHidden = true
-        if upgradeContentView == nil {
-            let view = UpgradeTab.initTab()
-            view.translatesAutoresizingMaskIntoConstraints = false
-            sectionsDocumentView.addSubview(view)
-            let bottomConstraint = view.bottomAnchor.constraint(equalTo: sectionsDocumentView.bottomAnchor, constant: -Self.contentBottomPadding)
-            NSLayoutConstraint.activate([
-                view.topAnchor.constraint(equalTo: sectionsDocumentView.topAnchor, constant: Self.contentTopPadding + Self.topSectionTitlePadding),
-                view.leadingAnchor.constraint(equalTo: sectionsDocumentView.leadingAnchor, constant: Self.contentHorizontalPadding + Self.sectionContentHorizontalMargin),
-                view.trailingAnchor.constraint(lessThanOrEqualTo: sectionsDocumentView.trailingAnchor, constant: -(Self.contentTrailingPadding + Self.sectionContentHorizontalMargin)),
-                bottomConstraint,
-            ])
-            upgradeViewBottomConstraint = bottomConstraint
-            upgradeContentView = view
-        } else {
-            UpgradeTab.refreshStatus()
-        }
-        upgradeViewBottomConstraint?.isActive = true
-        upgradeContentView?.isHidden = false
-        isProgrammaticScrollInProgress = true
-        defer { isProgrammaticScrollInProgress = false }
-        rightScrollView.contentView.scroll(to: .zero)
-        rightScrollView.reflectScrolledClipView(rightScrollView.contentView)
-        lastContentScrollY = 0
-    }
-
-    private func hideUpgradeView() {
-        guard isShowingUpgradeView else { return }
-        isShowingUpgradeView = false
-        upgradeViewBottomConstraint?.isActive = false
-        upgradeContentView?.isHidden = true
-        sectionsStack.isHidden = false
-        sectionsStackBottomConstraint.isActive = true
-    }
-
-    func refreshUpgradeButton() {
-        upgradeButton.refreshTitle()
-    }
-
     private func selectSection(_ section: SettingsSection, scroll: Bool, selectInSidebar: Bool = true) {
-        hideUpgradeView()
         selectedSectionId = section.id
         if selectInSidebar, let row = visibleSections.firstIndex(where: { $0.id == section.id }), sidebarTableView.selectedRow != row {
             sidebarTableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
@@ -1216,7 +1053,6 @@ class SettingsWindow: NSWindow {
     }
 
     override func close() {
-        hasPlayedShine = false
         hideAppIfLastWindowIsClosed()
         super.close()
     }
@@ -1237,20 +1073,6 @@ extension SettingsWindow: NSWindowDelegate {
         liveResizeOriginX = nil
     }
 
-    func windowDidBecomeKey(_ notification: Notification) {
-        // Trial day count is baked into `LicenseManager.state` and only recomputed on reassignment.
-        // Refresh before the user reads the upgrade button / upgrade tab so the day count is current.
-        LicenseManager.shared.refreshState()
-        if isShowingUpgradeView {
-            UpgradeTab.refreshStatus()
-        }
-        guard !hasPlayedShine else { return }
-        hasPlayedShine = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            self?.upgradeButton.playShineAnimation()
-        }
-    }
-
     func windowWillClose(_ notification: Notification) {
         // Defer to the next runloop tick: tearing down view trees, removing observers,
         // and dropping the last strong ref to `self` while AppKit is still inside its own
@@ -1260,7 +1082,6 @@ extension SettingsWindow: NSWindowDelegate {
             ControlsTab.cleanup()
             GeneralTab.cleanup()
             ExceptionsTab.cleanup()
-            UpgradeTab.cleanup()
             SettingsWindow.shared = nil
         }
     }

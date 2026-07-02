@@ -6,10 +6,10 @@ import Foundation
 /// caret, refresh, edit menu, `App.cycleSelection`). No globals, no AppKit, no async — so every
 /// interaction is unit-testable. Behavior mirrors the original branch order exactly.
 ///
-/// Pro gating note: `ProFeature.*.attemptUse()` has side effects (it can consume the free pass and
-/// surface the upgrade UI), so the caller evaluates it at the real attempt moment and passes the
-/// resulting `Bool` in — the kernel never calls it. `toggle` is gate-free because the original
-/// `toggleSearchModeFromShortcut` delegated gating to `enableSearchEditing` / `disableSearchMode`.
+/// Gating note: callers pass `canSearch` / `canLockSearch` as plain Bools (always `true` in the
+/// app today — the historical Pro gate was removed); the kernel just routes on them. `toggle` is
+/// gate-free because the original `toggleSearchModeFromShortcut` delegated gating to
+/// `enableSearchEditing` / `disableSearchMode`.
 
 enum SearchMode {
     case off

@@ -74,8 +74,7 @@ class LabelAndControl: NSObject {
     static func makeImageRadioButtons(_ rawName: String,
                                       _ macroPreferences: [ImageMacroPreference],
                                       extraAction: ActionClosure? = nil,
-                                      buttonSpacing: CGFloat = 15,
-                                      proGatedIndices: Set<Int> = []) -> NSStackView {
+                                      buttonSpacing: CGFloat = 15) -> NSStackView {
         SettingsSearchIndex.registerStrings(macroPreferences.map { $0.localizedString })
         let buttonViews = macroPreferences.enumerated().map { (index, preference) -> ImageTextButtonView in
             let state: NSControl.StateValue = CachedUserDefaults.intFromMacroPref(rawName, macroPreferences) == index ? .on : .off
@@ -83,13 +82,6 @@ class LabelAndControl: NSObject {
             buttonView.onClick = { [weak buttonView] control in
                 guard let buttonView else { return }
                 let siblings = (buttonView.superview as? NSStackView)?.arrangedSubviews.compactMap { $0 as? ImageTextButtonView } ?? []
-                if LicenseManager.shared.isProLocked && proGatedIndices.contains(index) {
-                    // Snap the radio group back to the stored value and bounce to the upgrade tab.
-                    let storedIndex = CachedUserDefaults.intFromMacroPref(rawName, macroPreferences)
-                    siblings.enumerated().forEach { (i, b) in b.state = (i == storedIndex) ? .on : .off }
-                    UpgradeTab.navigateToUpgradeTab()
-                    return
-                }
                 siblings.enumerated().forEach { (i, otherButtonView) in
                     if otherButtonView != buttonView {
                         otherButtonView.state = i == index ? .on : .off

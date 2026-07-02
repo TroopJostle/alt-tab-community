@@ -76,7 +76,7 @@ class TilesView {
     }
 
     static func lockSearchMode() {
-        switch SearchModeResolver.lock(mode: searchMode, canLockSearch: ProFeature.lockSearchInSwitcher.attemptUse()) {
+        switch SearchModeResolver.lock(mode: searchMode, canLockSearch: true) {
             case .lockResults:
                 searchMode = .locked
                 updateSearchFieldEditability()
@@ -89,7 +89,7 @@ class TilesView {
     }
 
     static func enableSearchEditing() {
-        switch SearchModeResolver.enableEditing(mode: searchMode, canSearch: ProFeature.searchInSwitcher.attemptUse()) {
+        switch SearchModeResolver.enableEditing(mode: searchMode, canSearch: true) {
             case .placeCaretOnly:
                 placeSearchCaretAtEnd()
             case .enterEditing(let refreshUi):
@@ -180,7 +180,6 @@ class TilesView {
 
     private static func updateSearchQuery(_ query: String) {
         if (SwitcherSession.current?.searchQuery ?? "") == query { return }
-        if !query.isEmpty { UsageStats.recordSearchIfFirst() }
         clearHover()
         Windows.updateSearchQuery(query)
         stopKeyRepeatTimers()

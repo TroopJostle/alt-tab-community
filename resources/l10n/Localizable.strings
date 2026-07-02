@@ -1,17 +1,8 @@
 /* No comment provided by engineer. */
-"%@ now has a Pro tier" = "%@ now has a Pro tier";
-
-/* No comment provided by engineer. */
-"%@ — last seen %@" = "%1$@ — last seen %2$@";
-
-/* No comment provided by engineer. */
 "3-finger Horizontal Swipe" = "3-finger Horizontal Swipe";
 
 /* No comment provided by engineer. */
 "3-finger Vertical Swipe" = "3-finger Vertical Swipe";
-
-/* No comment provided by engineer. */
-"30-day money-back guarantee" = "30-day money-back guarantee";
 
 /* No comment provided by engineer. */
 "4-finger Horizontal Swipe" = "4-finger Horizontal Swipe";
@@ -30,15 +21,6 @@
 
 /* No comment provided by engineer. */
 "Accessibility" = "Accessibility";
-
-/* No comment provided by engineer. */
-"Activate" = "Activate";
-
-/* No comment provided by engineer. */
-"Activate your Pro license" = "Activate your Pro license";
-
-/* No comment provided by engineer. */
-"Activation failed" = "Activation failed";
 
 /* No comment provided by engineer. */
 "Active app" = "Active app";
@@ -62,9 +44,6 @@
 "Additional controls…" = "Additional controls…";
 
 /* No comment provided by engineer. */
-"Additional shortcuts" = "Additional shortcuts";
-
-/* No comment provided by engineer. */
 "After keys are released" = "After keys are released";
 
 /* No comment provided by engineer. */
@@ -85,23 +64,11 @@
 /* No comment provided by engineer. */
 "AltTab crashed last time you used it. Sending a crash report will help get the issue fixed" = "AltTab crashed last time you used it. Sending a crash report will help get the issue fixed";
 
-/* No comment provided by engineer. */
-"AltTab is a free, open-source window switcher for macOS. Pro features are available with a 14-day free trial." = "AltTab is a free, open-source window switcher for macOS. Pro features are available with a 14-day free trial.";
-
 /* Menubar callout. %@ is one or more feature names, e.g. Thumbnails */
 "AltTab is running without Screen Recording permissions. %@ won’t show." = "AltTab is running without Screen Recording permissions. %@ won’t show.";
 
 /* No comment provided by engineer. */
 "AltTab needs some permissions" = "AltTab needs some permissions";
-
-/* No comment provided by engineer. */
-"AltTab Pro" = "AltTab Pro";
-
-/* No comment provided by engineer. */
-"AltTab Pro adds 4 features beyond the free switcher." = "AltTab Pro adds 4 features beyond the free switcher.";
-
-/* No comment provided by engineer. */
-"AltTab Pro is still available" = "AltTab Pro is still available";
 
 /* No comment provided by engineer. */
 "AltTab will show if the window is currently minimized or fullscreen with a status icon." = "AltTab will show if the window is currently minimized or fullscreen with a status icon.";
@@ -123,18 +90,6 @@
 
 /* No comment provided by engineer. */
 "App Icons" = "App Icons";
-
-/* No comment provided by engineer. */
-"App Icons & Titles styles" = "App Icons & Titles styles";
-
-/* No comment provided by engineer. */
-"App Icons & Window Titles styles" = "App Icons & Window Titles styles";
-
-/* No comment provided by engineer. */
-"App Icons / Titles styles" = "App Icons / Titles styles";
-
-/* No comment provided by engineer. */
-"App Icons appearance" = "App Icons appearance";
 
 /* No comment provided by engineer. */
 "App is hidden" = "App is hidden";
@@ -170,16 +125,7 @@
 "Auto" = "Auto";
 
 /* No comment provided by engineer. */
-"Auto Size — larger previews with few windows, more at once with many" = "Auto Size — larger previews with few windows, more at once with many";
-
-/* No comment provided by engineer. */
 "Auto-install updates periodically" = "Auto-install updates periodically";
-
-/* No comment provided by engineer. */
-"Auto-sizing switcher" = "Auto-sizing switcher";
-
-/* No comment provided by engineer. */
-"Automatic activation failed" = "Automatic activation failed";
 
 /* No comment provided by engineer. */
 "Brief description of the bug" = "Brief description of the bug";
@@ -215,19 +161,10 @@
 "Conflicting shortcut" = "Conflicting shortcut";
 
 /* No comment provided by engineer. */
-"Continue with Free" = "Continue with Free";
-
-/* No comment provided by engineer. */
 "Controls" = "Controls";
 
 /* LetsMove replacement alert */
 "Could not move to Applications folder" = "Could not move to Applications folder";
-
-/* No comment provided by engineer. */
-"Couldn't deactivate that machine" = "Couldn't deactivate that machine";
-
-/* No comment provided by engineer. */
-"Couldn't save your license to the macOS Keychain. Please share the details below with the developer." = "Couldn't save your license to the macOS Keychain. Please share the details below with the developer.";
 
 /* No comment provided by engineer. */
 "Couldn't submit feedback" = "Couldn't submit feedback";
@@ -246,24 +183,6 @@
 
 /* No comment provided by engineer. */
 "Dark" = "Dark";
-
-/* No comment provided by engineer. */
-"Dark Mode, live preview, window controls, trackpad gestures, and more" = "Dark Mode, live preview, window controls, trackpad gestures, and more";
-
-/* No comment provided by engineer. */
-"Deactivate and activate here" = "Deactivate and activate here";
-
-/* No comment provided by engineer. */
-"Deactivate license" = "Deactivate license";
-
-/* No comment provided by engineer. */
-"Deactivate license on this machine" = "Deactivate license on this machine";
-
-/* No comment provided by engineer. */
-"Deactivation failed" = "Deactivation failed";
-
-/* No comment provided by engineer. */
-"Deactivation was rejected by the server." = "Deactivation was rejected by the server.";
 
 /* Menubar option */
 "Debug tools" = "Debug tools";
@@ -302,12 +221,6 @@
 "Export settings…" = "Export settings…";
 
 /* No comment provided by engineer. */
-"Extra shortcuts" = "Extra shortcuts";
-
-/* No comment provided by engineer. */
-"Extra shortcuts are a Pro feature." = "Extra shortcuts are a Pro feature.";
-
-/* No comment provided by engineer. */
 "Fade in animation of Preview" = "Fade in animation of Preview";
 
 /* No comment provided by engineer. */
@@ -315,9 +228,6 @@
 
 /* No comment provided by engineer. */
 "Failed to import settings" = "Failed to import settings";
-
-/* No comment provided by engineer. */
-"Feature" = "Feature";
 
 /* No comment provided by engineer. */
 "Filtering" = "Filtering";
@@ -329,9 +239,6 @@
 "Focus selected window" = "Focus selected window";
 
 /* No comment provided by engineer. */
-"Free" = "Free";
-
-/* No comment provided by engineer. */
 "Fullscreen/Defullscreen window" = "Fullscreen/Defullscreen window";
 
 /* No comment provided by engineer. */
@@ -339,12 +246,6 @@
 
 /* No comment provided by engineer. */
 "Gesture" = "Gesture";
-
-/* No comment provided by engineer. */
-"Get more from AltTab with Pro" = "Get more from AltTab with Pro";
-
-/* Menubar option */
-"Get Pro" = "Get Pro";
 
 /* No comment provided by engineer. */
 "Go back" = "Go back";
@@ -382,14 +283,8 @@
 /* No comment provided by engineer. */
 "Hold" = "Hold";
 
-/* No comment provided by engineer. */
-"I already have a license key" = "I already have a license key";
-
 /* LetsMove replacement alert */
 "I can move myself to the Applications folder if you'd like." = "I can move myself to the Applications folder if you'd like.";
-
-/* No comment provided by engineer. */
-"I lost my license key" = "I lost my license key";
 
 /* No comment provided by engineer. */
 "I think the app could be improved with…" = "I think the app could be improved with…";
@@ -399,9 +294,6 @@
 
 /* No comment provided by engineer. */
 "Import settings…" = "Import settings…";
-
-/* No comment provided by engineer. */
-"Invalid license key." = "Invalid license key.";
 
 /* No comment provided by engineer. */
 "Language" = "Language";
@@ -416,28 +308,13 @@
 "Later" = "Later";
 
 /* No comment provided by engineer. */
-"License doesn't cover this version" = "License doesn't cover this version";
-
-/* No comment provided by engineer. */
-"License will remain valid and usable to activate AltTab on any machine" = "License will remain valid and usable to activate AltTab on any machine";
-
-/* No comment provided by engineer. */
 "Light" = "Light";
 
 /* No comment provided by engineer. */
 "Lock search" = "Lock search";
 
 /* No comment provided by engineer. */
-"Machine %@" = "Machine %@";
-
-/* No comment provided by engineer. */
 "macOS reserves ⌘⌥⎋, ⌘⌥⇧⎋, and ⌘⌥⇧⌃⎋ for Force Quit and they cannot be unbound. AltTab cannot use them.\n\nYour change would assign one of these to: %@." = "macOS reserves ⌘⌥⎋, ⌘⌥⇧⎋, and ⌘⌥⇧⌃⎋ for Force Quit and they cannot be unbound. AltTab cannot use them.\n\nYour change would assign one of these to: %@.";
-
-/* No comment provided by engineer. */
-"Manage activations, view receipts, etc" = "Manage activations, view receipts, etc";
-
-/* No comment provided by engineer. */
-"Maybe later" = "Maybe later";
 
 /* No comment provided by engineer. */
 "Medium" = "Medium";
@@ -464,19 +341,10 @@
 "Multiple screens" = "Multiple screens";
 
 /* No comment provided by engineer. */
-"My Account" = "My Account";
-
-/* No comment provided by engineer. */
 "Never" = "Never";
 
 /* No comment provided by engineer. */
 "Never send crash reports" = "Never send crash reports";
-
-/* No comment provided by engineer. */
-"No response from server." = "No response from server.";
-
-/* No comment provided by engineer. */
-"No thanks — don't ask again" = "No thanks — don't ask again";
 
 /* No comment provided by engineer. */
 "No Window" = "No Window";
@@ -491,13 +359,7 @@
 "Not allowed" = "Not allowed";
 
 /* No comment provided by engineer. */
-"Not now" = "Not now";
-
-/* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"On Day 15, Pro features revert to the free version." = "On Day 15, Pro features revert to the free version.";
 
 /* No comment provided by engineer. */
 "Only on different screen" = "Only on different screen";
@@ -520,12 +382,6 @@
 /* No comment provided by engineer. */
 "Overridden in Shortcut:" = "Overridden in Shortcut:";
 
-/* No comment provided by engineer. */
-"Paste your license key:" = "Paste your license key:";
-
-/* No comment provided by engineer. */
-"Pick a machine to deactivate so you can activate here." = "Pick a machine to deactivate so you can activate here.";
-
 /* LetsMove replacement alert */
 "Please drag AltTab into the Applications folder manually." = "Please drag AltTab into the Applications folder manually.";
 
@@ -534,30 +390,6 @@
 
 /* No comment provided by engineer. */
 "Preview selected window" = "Preview selected window";
-
-/* No comment provided by engineer. */
-"Pro" = "Pro";
-
-/* No comment provided by engineer. */
-"Pro activated" = "Pro activated";
-
-/* No comment provided by engineer. */
-"Pro feature uses" = "Pro feature uses";
-
-/* No comment provided by engineer. */
-"Pro includes:" = "Pro includes:";
-
-/* No comment provided by engineer. */
-"Pro is still available whenever you're ready." = "Pro is still available whenever you're ready.";
-
-/* No comment provided by engineer. */
-"Pro license activated for %@" = "Pro license activated for %@";
-
-/* No comment provided by engineer. */
-"Pro Lifetime activated" = "Pro Lifetime activated";
-
-/* No comment provided by engineer. */
-"Pro Lifetime license activated for %@" = "Pro Lifetime license activated for %@";
 
 /* %@ is AltTab */
 "Quit %@" = "Quit %@";
@@ -570,9 +402,6 @@
 
 /* No comment provided by engineer. */
 "Recently Focused First" = "Recently Focused First";
-
-/* No comment provided by engineer. */
-"Reliable, fast window switching with high-quality thumbnails" = "Reliable, fast window switching with high-quality thumbnails";
 
 /* No comment provided by engineer. */
 "Remember my choice" = "Remember my choice";
@@ -606,15 +435,6 @@
 
 /* No comment provided by engineer. */
 "Search" = "Search";
-
-/* No comment provided by engineer. */
-"Search is a Pro feature." = "Search is a Pro feature.";
-
-/* No comment provided by engineer. */
-"Search windows by typing" = "Search windows by typing";
-
-/* No comment provided by engineer. */
-"Search — find a window by typing" = "Search — find a window by typing";
 
 /* No comment provided by engineer. */
 "Select next window" = "Select next window";
@@ -677,9 +497,6 @@
 "Show at the end" = "Show at the end";
 
 /* No comment provided by engineer. */
-"Show details (for support)" = "Show details (for support)";
-
-/* No comment provided by engineer. */
 "Show fullscreen windows" = "Show fullscreen windows";
 
 /* No comment provided by engineer. */
@@ -722,9 +539,6 @@
 "Small" = "Small";
 
 /* No comment provided by engineer. */
-"Some Pro features have reverted to free defaults." = "Some Pro features have reverted to free defaults.";
-
-/* No comment provided by engineer. */
 "Source code" = "Source code";
 
 /* No comment provided by engineer. */
@@ -735,12 +549,6 @@
 
 /* No comment provided by engineer. */
 "Start at login" = "Start at login";
-
-/* No comment provided by engineer. */
-"Start my 14-day trial" = "Start my 14-day trial";
-
-/* No comment provided by engineer. */
-"Still interested in Pro?" = "Still interested in Pro?";
 
 /* No comment provided by engineer. */
 "Suggest a change" = "Suggest a change";
@@ -761,9 +569,6 @@
 "System Default" = "System Default";
 
 /* No comment provided by engineer. */
-"The App Icons style is a Pro feature." = "The App Icons style is a Pro feature.";
-
-/* No comment provided by engineer. */
 "The application needs to restart to apply the imported settings." = "The application needs to restart to apply the imported settings.";
 
 /* No comment provided by engineer. */
@@ -773,16 +578,7 @@
 "The server didn't accept the submission. Check your internet connection and try again — your draft is preserved." = "The server didn't accept the submission. Check your internet connection and try again — your draft is preserved.";
 
 /* No comment provided by engineer. */
-"The Titles style is a Pro feature." = "The Titles style is a Pro feature.";
-
-/* No comment provided by engineer. */
 "Theme" = "Theme";
-
-/* No comment provided by engineer. */
-"This license is already activated elsewhere" = "This license is already activated elsewhere";
-
-/* No comment provided by engineer. */
-"This license is already activated on the maximum number of machines. Deactivate one to continue." = "This license is already activated on the maximum number of machines. Deactivate one to continue.";
 
 /* No comment provided by engineer. */
 "This permission is needed to focus windows after you release the shortcut" = "This permission is needed to focus windows after you release the shortcut";
@@ -806,43 +602,13 @@
 "Titles" = "Titles";
 
 /* No comment provided by engineer. */
-"Titles appearance" = "Titles appearance";
-
-/* No comment provided by engineer. */
 "Trackpad haptic feedback" = "Trackpad haptic feedback";
-
-/* No comment provided by engineer. */
-"Trial expired" = "Trial expired";
-
-/* No comment provided by engineer. */
-"Trial: %d days remaining" = "Trial: %d days remaining";
 
 /* No comment provided by engineer. */
 "Trigger" = "Trigger";
 
 /* No comment provided by engineer. */
-"Try them in Settings" = "Try them in Settings";
-
-/* No comment provided by engineer. */
 "Unassign existing shortcut and continue" = "Unassign existing shortcut and continue";
-
-/* No comment provided by engineer. */
-"Unexpected response from server." = "Unexpected response from server.";
-
-/* No comment provided by engineer. */
-"Unlock extra shortcuts with Pro" = "Unlock extra shortcuts with Pro";
-
-/* No comment provided by engineer. */
-"Unlock Search with Pro" = "Unlock Search with Pro";
-
-/* No comment provided by engineer. */
-"Unlock the App Icons style with Pro" = "Unlock the App Icons style with Pro";
-
-/* No comment provided by engineer. */
-"Unlock the Titles style with Pro" = "Unlock the Titles style with Pro";
-
-/* No comment provided by engineer. */
-"Up to 9 keyboard shortcuts" = "Up to 9 keyboard shortcuts";
 
 /* No comment provided by engineer. */
 "Update now" = "Update now";
@@ -875,9 +641,6 @@
 "Website" = "Website";
 
 /* No comment provided by engineer. */
-"Welcome to %@" = "Welcome to %@";
-
-/* No comment provided by engineer. */
 "What did you expect? What happened? Steps to reproduce…" = "What did you expect? What happened? Steps to reproduce…";
 
 /* No comment provided by engineer. */
@@ -905,9 +668,6 @@
 "Window previews" = "Window previews";
 
 /* No comment provided by engineer. */
-"window switches" = "window switches";
-
-/* No comment provided by engineer. */
 "Window Title" = "Window Title";
 
 /* No comment provided by engineer. */
@@ -917,43 +677,10 @@
 "You can’t undo this action." = "You can’t undo this action.";
 
 /* No comment provided by engineer. */
-"You have 14 days to try all Pro features. After that, Pro features will step back and the core window switcher will keep working exactly as before.\n\nAltTab stays free and open-source. Pro is an optional one-time purchase that funds continued development." = "You have 14 days to try all Pro features. After that, Pro features will step back and the core window switcher will keep working exactly as before.\n\nAltTab stays free and open-source. Pro is an optional one-time purchase that funds continued development.";
-
-/* No comment provided by engineer. */
 "You may need to disable some conflicting system gestures" = "You may need to disable some conflicting system gestures";
-
-/* No comment provided by engineer. */
-"You're on day 4 of 14 — try these before your trial ends:" = "You're on day 4 of 14 — try these before your trial ends:";
 
 /* No comment provided by engineer. */
 "You're running v%1$@. v%2$@ is available. The bug you're seeing may already be fixed — please update first and check before reporting." = "You're running v%1$@. v%2$@ is available. The bug you're seeing may already be fixed — please update first and check before reporting.";
 
 /* No comment provided by engineer. */
-"You've been using %@.\nThese will switch back to defaults on Day 15." = "You've been using %@.\nThese will switch back to defaults on Day 15.";
-
-/* No comment provided by engineer. */
-"You've been using %d Pro features.\nThey'll switch back to defaults on Day 15." = "You've been using %d Pro features.\nThey'll switch back to defaults on Day 15.";
-
-/* No comment provided by engineer. */
-"You've used AltTab %@ times — %@ of those used Pro features." = "You've used AltTab %1$@ times — %2$@ of those used Pro features.";
-
-/* No comment provided by engineer. */
-"You've used AltTab %@ times." = "You've used AltTab %@ times.";
-
-/* No comment provided by engineer. */
-"Your 14-day Pro trial just ended" = "Your 14-day Pro trial just ended";
-
-/* No comment provided by engineer. */
 "Your feedback will be submitted as a public GitHub issue." = "Your feedback will be submitted as a public GitHub issue.";
-
-/* No comment provided by engineer. */
-"Your license doesn't cover this version. Upgrade to Lifetime Pro." = "Your license doesn't cover this version. Upgrade to Lifetime Pro.";
-
-/* No comment provided by engineer. */
-"Your Pro trial ends in 2 days" = "Your Pro trial ends in 2 days";
-
-/* No comment provided by engineer. */
-"Your trial includes Pro features" = "Your trial includes Pro features";
-
-/* No comment provided by engineer. */
-"YOUR USAGE SO FAR" = "YOUR USAGE SO FAR";
