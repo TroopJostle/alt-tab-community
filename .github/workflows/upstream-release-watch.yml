@@ -1,0 +1,115 @@
+name: Upstream release watch
+
+# Watches the upstream project (lwouis/alt-tab-macos) for new releases and,
+# when one lands that is newer than this fork's current version, opens a
+# tracking issue with the changelog and ready-to-use compare links so the
+# new functionality / security fixes can be merged in (e.g. with an LLM).
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # daily, 08:00 UTC
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  UPSTREAM: lwouis/alt-tab-macos
+  LABEL: upstream-sync
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+
+      - name: Compare versions and open sync issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORK: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # --- current fork version (from the top of changelog.md) ---
+          fork_ver=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' changelog.md | head -1 || true)
+          if [ -z "$fork_ver" ]; then
+            echo "Could not determine fork version from changelog.md; aborting."
+            exit 1
+          fi
+          echo "Fork version: $fork_ver"
+
+          # --- latest upstream release (stable only; excludes drafts/prereleases) ---
+          latest=$(gh api "repos/$UPSTREAM/releases/latest")
+          up_tag=$(echo "$latest" | jq -r '.tag_name')
+          up_ver=${up_tag#v}
+          up_url=$(echo "$latest" | jq -r '.html_url')
+          up_name=$(echo "$latest" | jq -r '.name // .tag_name')
+          echo "Upstream latest: $up_tag"
+
+          # previous upstream release tag, for a release-delta compare link
+          prev_tag=$(gh api "repos/$UPSTREAM/releases?per_page=2" --jq '.[1].tag_name // empty')
+
+          # --- only proceed if upstream is strictly newer than the fork ---
+          newest=$(printf '%s\n%s\n' "$fork_ver" "$up_ver" | sort -V | tail -1)
+          if [ "$up_ver" = "$fork_ver" ] || [ "$newest" != "$up_ver" ]; then
+            echo "Fork ($fork_ver) is up to date with upstream ($up_ver). Nothing to do."
+            exit 0
+          fi
+          echo "Upstream $up_ver is newer than fork $fork_ver."
+
+          # --- make sure the label exists ---
+          gh label create "$LABEL" --repo "$FORK" \
+            --color 5319e7 --description "Upstream release awaiting merge" --force
+
+          # --- skip if we already opened an issue for this tag ---
+          dupes=$(gh issue list --repo "$FORK" --label "$LABEL" --state all --limit 200 \
+            --json title --jq "[.[] | select(.title | contains(\"$up_tag\"))] | length")
+          if [ "$dupes" != "0" ]; then
+            echo "A sync issue for $up_tag already exists. Nothing to do."
+            exit 0
+          fi
+
+          # --- compare links ---
+          fork_gap="https://github.com/$FORK/compare/master...lwouis:alt-tab-macos:$up_tag"
+          release_delta=""
+          if [ -n "$prev_tag" ]; then
+            release_delta="https://github.com/$UPSTREAM/compare/$prev_tag...$up_tag"
+          fi
+
+          # --- build the issue body ---
+          {
+            echo "Upstream **[$up_name]($up_url)** is out. This fork is on **$fork_ver**."
+            echo
+            echo "### What to merge"
+            echo "- 🔀 **What this fork is missing** (cross-repo diff, feed this to an LLM):"
+            echo "  <$fork_gap>"
+            if [ -n "$release_delta" ]; then
+              echo "- 📦 **This release's changes** ($prev_tag → $up_tag):"
+              echo "  <$release_delta>"
+            fi
+            echo "- 📝 Upstream release page: <$up_url>"
+            echo
+            echo "### Suggested LLM merge prompt"
+            echo '```'
+            echo "Review the upstream diff at $fork_gap."
+            echo "This fork intentionally REMOVED the Pro licensing/paywall system"
+            echo "(LicenseManager, trials, upgrade nags, feature gates). Port over"
+            echo "upstream's functionality and security fixes, but do NOT reintroduce"
+            echo "any licensing, trial, feature-gate, or upgrade-prompt code. Keep all"
+            echo "former Pro features free. Summarize what you merged and what you skipped."
+            echo '```'
+            echo
+            echo "### After merging"
+            echo "- [ ] Bump this fork's version to \`$up_ver\` (changelog.md)"
+            echo "- [ ] Confirm no licensing/paywall code was reintroduced"
+            echo "- [ ] Build passes (\`sh ai/build.sh\`)"
+            echo "- [ ] Close this issue"
+            echo
+            echo "<sub>Opened automatically by \`.github/workflows/upstream-release-watch.yml\`.</sub>"
+          } > body.md
+
+          gh issue create --repo "$FORK" --label "$LABEL" \
+            --title "Upstream release $up_tag available — merge into fork" \
+            --body-file body.md
