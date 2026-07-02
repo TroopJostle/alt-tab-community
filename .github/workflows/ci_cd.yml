@@ -19,6 +19,11 @@ env:
   APP_NAME: AltTab
 jobs:
   build:
+    # This is upstream's release/notarize pipeline; it needs Apple signing
+    # secrets and a push-capable token that this community fork doesn't have.
+    # Skip it entirely in the fork so pushes don't fail on it. It still runs
+    # for the upstream maintainer's repo.
+    if: github.repository == 'lwouis/alt-tab-macos'
     runs-on: macos-15 # all options: https://github.com/actions/runner-images/tree/main
     environment: production
     steps:
