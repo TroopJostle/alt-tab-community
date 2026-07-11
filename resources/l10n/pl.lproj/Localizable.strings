@@ -30,6 +30,8 @@
 "AltTab is a free, open-source window switcher for macOS. Pro features are available with a 14-day free trial." = "AltTab to darmowy, otwartoźródłowy przełącznik okien dla macOS. Funkcje Pro są dostępne w 14-dniowym bezpłatnym okresie próbnym.";
 "AltTab is running without Screen Recording permissions. %@ won’t show." = "AltTab działa bez uprawnień do Nagrywania ekranu. %@ nie będą wyświetlane.";
 "AltTab needs some permissions" = "AltTab wymaga uprawnień";
+"AltTab preferences file is a symlink. macOS doesn’t support symlink for preferences. Please use a valid file instead of a symlink here:" = "Plik ustawień AltTab jest dowiązaniem symbolicznym. macOS nie obsługuje dowiązań symbolicznych dla ustawień. Użyj tutaj prawidłowego pliku zamiast dowiązania symbolicznego:";
+"AltTab preferences file isn’t writable by your account. Please fix ownership and permissions of the file here:" = "Plik ustawień AltTab nie jest zapisywalny dla Twojego konta. Popraw właściciela i uprawnienia pliku tutaj:";
 "AltTab Pro" = "AltTab Pro";
 "AltTab Pro adds 4 features beyond the free switcher." = "AltTab Pro dodaje 4 funkcje wykraczające poza darmowy przełącznik.";
 "AltTab Pro is still available" = "AltTab Pro jest nadal dostępny";
@@ -140,7 +142,6 @@
 "License doesn't cover this version" = "Licencja nie obejmuje tej wersji";
 "License will remain valid and usable to activate AltTab on any machine" = "Licencja pozostanie ważna i będzie można jej użyć do aktywacji AltTab na dowolnym komputerze";
 "Light" = "Jasny";
-"Lock search" = "Zablokuj wyszukiwanie";
 "Machine %@" = "Komputer %@";
 "macOS reserves ⌘⌥⎋, ⌘⌥⇧⎋, and ⌘⌥⇧⌃⎋ for Force Quit and they cannot be unbound. AltTab cannot use them.\n\nYour change would assign one of these to: %@." = "macOS rezerwuje ⌘⌥⎋, ⌘⌥⇧⎋ i ⌘⌥⇧⌃⎋ dla Wymuś koniec i nie można ich odpiąć. AltTab nie może ich użyć.\n\nTwoja zmiana przypisałaby jeden z nich do: %@.";
 "Manage activations, view receipts, etc" = "Zarządzaj aktywacjami, przeglądaj rachunki itp.";
@@ -316,5 +317,6 @@
 "Your feedback will be submitted as a public GitHub issue." = "Twoja opinia zostanie wysłana jako publiczne zgłoszenie na GitHub.";
 "Your license doesn't cover this version. Upgrade to Lifetime Pro." = "Twoja licencja nie obejmuje tej wersji. Przejdź na Lifetime Pro.";
 "Your Pro trial ends in 2 days" = "Twój okres próbny Pro kończy się za 2 dni";
+"Your settings reset every time AltTab restarts." = "Twoje ustawienia są resetowane przy każdym ponownym uruchomieniu AltTab.";
 "Your trial includes Pro features" = "Twój okres próbny obejmuje funkcje Pro";
 "YOUR USAGE SO FAR" = "TWOJE DOTYCHCZASOWE UŻYCIE";

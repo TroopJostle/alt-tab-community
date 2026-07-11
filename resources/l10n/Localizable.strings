@@ -71,6 +71,12 @@
 "AltTab needs some permissions" = "AltTab needs some permissions";
 
 /* No comment provided by engineer. */
+"AltTab preferences file is a symlink. macOS doesn’t support symlink for preferences. Please use a valid file instead of a symlink here:" = "AltTab preferences file is a symlink. macOS doesn’t support symlink for preferences. Please use a valid file instead of a symlink here:";
+
+/* No comment provided by engineer. */
+"AltTab preferences file isn’t writable by your account. Please fix ownership and permissions of the file here:" = "AltTab preferences file isn’t writable by your account. Please fix ownership and permissions of the file here:";
+
+/* No comment provided by engineer. */
 "AltTab will show if the window is currently minimized or fullscreen with a status icon." = "AltTab will show if the window is currently minimized or fullscreen with a status icon.";
 
 /* No comment provided by engineer. */
@@ -309,9 +315,6 @@
 
 /* No comment provided by engineer. */
 "Light" = "Light";
-
-/* No comment provided by engineer. */
-"Lock search" = "Lock search";
 
 /* No comment provided by engineer. */
 "macOS reserves ⌘⌥⎋, ⌘⌥⇧⎋, and ⌘⌥⇧⌃⎋ for Force Quit and they cannot be unbound. AltTab cannot use them.\n\nYour change would assign one of these to: %@." = "macOS reserves ⌘⌥⎋, ⌘⌥⇧⎋, and ⌘⌥⇧⌃⎋ for Force Quit and they cannot be unbound. AltTab cannot use them.\n\nYour change would assign one of these to: %@.";
@@ -684,3 +687,6 @@
 
 /* No comment provided by engineer. */
 "Your feedback will be submitted as a public GitHub issue." = "Your feedback will be submitted as a public GitHub issue.";
+
+/* No comment provided by engineer. */
+"Your settings reset every time AltTab restarts." = "Your settings reset every time AltTab restarts.";

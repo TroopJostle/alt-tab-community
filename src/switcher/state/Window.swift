@@ -2,14 +2,6 @@ import Cocoa
 
 @dynamicMemberLookup
 class Window {
-    private static let notifications = [
-        kAXUIElementDestroyedNotification,
-        kAXTitleChangedNotification,
-        kAXWindowMiniaturizedNotification,
-        kAXWindowDeminiaturizedNotification,
-        kAXWindowResizedNotification,
-        kAXWindowMovedNotification,
-    ]
     private static var globalCreationCounter = Int.zero
 
     /// Canonical data record this window exposes to the switcher's logic kernels (see
@@ -29,7 +21,6 @@ class Window {
     var screenId: ScreenUuid?
     var axUiElement: AXUIElement?
     var application: Application
-    var axObserver: AXObserver?
     var rowIndex: Int?
     var debugId: String!
     var lastSearchQuery: String?
@@ -64,14 +55,13 @@ class Window {
         Window.globalCreationCounter += 1
         self.creationOrder = Window.globalCreationCounter
         application.removeWindowlessAppWindow()
-        // the app may have timed out trying to subscribe to app notifications
-        // It may be responsive now since it has a window; we attempt again
-        application.observeEventsIfEligible()
+        // ensure the app's AXUIElement exists for on-demand reads + window actions (it's skipped at app init
+        // for ineligible apps; having a window means the app is eligible now)
+        application.ensureAxUiElement()
         // fetch app icon only if we display that app in the switcher
         application.fetchAppIcon()
         checkIfFocused()
         Logger.info { self.debugId }
-        observeEvents()
     }
 
     init(_ application: Application) {
@@ -94,23 +84,6 @@ class Window {
         Logger.info { self.debugId }
     }
 
-    /// Symmetric counterpart to the `CFRunLoopAddSource` in `observeEvents()`.
-    /// CFRunLoop strongly retains every source ever added; without an explicit remove,
-    /// every Window we ever observed leaves an orphaned AXObserver source pinned in
-    /// `BackgroundWork.accessibilityEventsThread.runLoop` for the rest of the app's lifetime.
-    /// This is the dominant contributor to the 399 GB virtual-memory growth users see in
-    /// long-running sessions (issue #5612 etc.).
-    /// Called from `Windows.removeWindows`. CFRunLoopRemoveSource is thread-safe so
-    /// invoking from the main thread on another runloop's source is fine.
-    func releaseAxObserver() {
-        if let axObserver, let runLoop = BackgroundWork.accessibilityEventsThread?.runLoop {
-            CFRunLoopRemoveSource(runLoop, AXObserverGetRunLoopSource(axObserver), .commonModes)
-        }
-        // Nil-out so ARC releases the AXObserver — its dealloc tears down all
-        // notification subscriptions in the AX framework automatically.
-        axObserver = nil
-    }
-
     func updateFromAxAttributes(_ title: String?, _ size: CGSize?, _ position: CGPoint?, _ isFullscreen: Bool?, _ isMinimized: Bool?) {
         self.title = bestEffortTitle(title)
         self.size = size
@@ -121,14 +94,38 @@ class Window {
         recomputeIsPhantom()
     }
 
-    /// Synchronous "phantom" detection — assert-only (may set `isPhantom`, never clears it). Catches the
-    /// strong signal (no Space at all: Joplin / Sprig / "show:false" Electron) at creation/show time,
-    /// reusing the spaceIds already populated by updateSpaces (cgWindowId.spaces()) — no new CGS call.
-    /// Clearing is owned by Applications.refreshIsPhantom (the authoritative CGS-based catch-all that
-    /// also handles alpha=0 / orderOut: phantoms that keep a Space); clearing here would clobber it on
-    /// every show. See PhantomWindowDetector.syncVerdict and PhantomWindowDetection.swift (#5714).
+    /// Update the WindowServer-owned facts (geometry, fullscreen) from a WS snapshot — the live path for
+    /// move/resize events. Title/subrole/tabs/minimized stay on the AX read: WS can't give them cleanly, and
+    /// minimized in particular can't be inferred from the WS ordered-out bit (which also fires for closing /
+    /// other-Space / app-hidden windows). Returns whether a filter-relevant field changed.
+    @discardableResult
+    func updateFromWindowServer(position: CGPoint, size: CGSize, isFullscreen: Bool) -> Bool {
+        let changed = self.position != position || self.size != size || self.isFullscreen != isFullscreen
+        self.position = position
+        self.size = size
+        self.isFullscreen = isFullscreen
+        if changed { recomputeIsPhantom() }
+        return changed
+    }
+
+    /// Synchronous "phantom" detection — monotonic for the weak signal (may set `isPhantom`, never clears
+    /// it on a non-empty Space), but clears once AX confirms a tab. Catches the strong signal (no Space at
+    /// all: Joplin / Sprig / "show:false" Electron) at creation/show time, reusing the spaceIds already
+    /// populated by updateSpaces (cgWindowId.spaces()) — no new CGS call. Clearing the weak/alpha=0 case is
+    /// owned by Applications.refreshIsPhantom (the authoritative CGS-based catch-all); clearing it here
+    /// would clobber that on every show. See PhantomWindowDetector.syncVerdict and PhantomWindowDetection.swift (#5714).
     func recomputeIsPhantom() {
         self.isPhantom = PhantomWindowDetector.syncVerdict(state, application.state)
+    }
+
+    /// A real window that just un-phantomed (its Space membership recovered) may belong to an app still
+    /// showing a windowless icon placeholder — added on a show while the window briefly looked windowless
+    /// (the empty-spaceIds blip during a fullscreen transition). Drop it. Async because the callers run
+    /// inside a Windows.list iteration and removeWindowlessAppWindow mutates that list.
+    private func dropStaleWindowlessPlaceholderIfUnphantomed(_ wasPhantom: Bool) {
+        guard wasPhantom, !self.isPhantom, !self.isWindowlessApp else { return }
+        let app = application
+        DispatchQueue.main.async { app.removeWindowlessAppWindow() }
     }
 
     func isEqualRobust(_ otherWindowAxUiElement: AXUIElement, _ otherWindowWid: CGWindowID?) -> Bool {
@@ -137,22 +134,19 @@ class Window {
         return otherWindowAxUiElement == axUiElement || (cgWindowId != nil && cgWindowId != CGWindowID(bitPattern: -1) && otherWindowWid == cgWindowId)
     }
 
-    private func observeEvents() {
-        AXObserverCreate(application.pid, AccessibilityEvents.axObserverCallback, &axObserver)
-        guard let axObserver else { return }
-        AXCallScheduler.shared.schedule(key: "sub-win-\(cgWindowId)", context: debugId, pid: application.pid) { [weak self] in
-            guard let self else { return }
-            if try self.axUiElement!.subscribeToNotification(axObserver, Window.notifications.first!, AccessibilityEvents.subscriptionRefcon(self.application.pid, self.cgWindowId ?? 0)) {
-                Logger.debug { "Subscribed to window: \(self.debugId)" }
-                for notification in Window.notifications.dropFirst() {
-                    AXCallScheduler.shared.schedule(key: "sub-win-\(cgWindowId)-\(notification)", context: self.debugId, pid: self.application.pid) { [weak self] in
-                        guard let self else { return }
-                        try self.axUiElement!.subscribeToNotification(axObserver, notification, AccessibilityEvents.subscriptionRefcon(self.application.pid, self.cgWindowId ?? 0))
-                    }
-                }
-            }
-        }
-        CFRunLoopAddSource(BackgroundWork.accessibilityEventsThread.runLoop, AXObserverGetRunLoopSource(axObserver), .commonModes)
+
+    /// Swap this window's cached AXUIElement for a fresher one (same wid). Some apps silently rebuild a
+    /// window's accessibility node, invalidating our ref (#5586), so on-demand reads + the window actions
+    /// would hit a dead node; swap in the freshly-resolved element.
+    func rebindAxElement(_ fresh: AXUIElement) {
+        axUiElement = fresh
+    }
+
+    /// Re-resolve this window's current AXUIElement by matching its wid against the app's live windows, to
+    /// recover when the cached ref went stale. Makes AX IPC calls — invoke off the main thread.
+    func refreshedAxElement() -> AXUIElement? {
+        guard let wid = cgWindowId else { return nil }
+        return WindowElementAcquisition.element(for: wid, pid: application.pid, route: .otherSpaceViaBruteForce)
     }
 
     func refreshThumbnail(_ screenshot: CALayerContents) {
@@ -186,23 +180,28 @@ class Window {
             altTabWindow.close()
             return
         }
-        BackgroundWork.accessibilityCommandsQueue.addOperation { [weak self] in
-            guard let self else { return }
-            if self.isFullscreen {
-                try? self.axUiElement!.setAttribute(kAXFullscreenAttribute, false)
+        guard let element = axUiElement else { return }
+        let wasFullscreen = self.isFullscreen
+        BackgroundWork.accessibilityCommandsQueue.addOperation {
+            if wasFullscreen {
+                try? element.setAttribute(kAXFullscreenAttribute, false)
                 // minimizing is ignored if sent immediatly; we wait for the de-fullscreen animation to be over
-                BackgroundWork.accessibilityCommandsQueue.addOperationAfter(deadline: .now() + .seconds(1)) { [weak self] in
-                    guard let self else { return }
-                    if let closeButton_ = try? self.axUiElement!.attributes([kAXCloseButtonAttribute]).closeButton {
+                BackgroundWork.accessibilityCommandsQueue.addOperationAfter(deadline: .now() + .seconds(1)) {
+                    if let closeButton_ = try? element.attributes([kAXCloseButtonAttribute]).closeButton {
                         try? closeButton_.performAction(kAXPressAction)
                     }
                 }
             } else {
-                if let closeButton_ = try? self.axUiElement!.attributes([kAXCloseButtonAttribute]).closeButton  {
+                if let closeButton_ = try? element.attributes([kAXCloseButtonAttribute]).closeButton {
                     try? closeButton_.performAction(kAXPressAction)
                 }
             }
         }
+        // No optimistic removal: the window leaves Windows.list only when the OS confirms it's gone. Closing
+        // orders the window out, and WindowServerEvents turns that into an AX-liveness probe: a dead element
+        // means the window is gone, so Applications.removeIfClosedAfterOrderOut removes it. The WindowServer
+        // destroy event (804) is the backstop for a close that fires no order-out we see (already off-screen).
+        // The switcher reflects OS state, never a predicted one.
     }
 
     func canBeMinDeminOrFullscreened() -> Bool {
@@ -267,8 +266,16 @@ class Window {
             // but quickly switches back to another window in that space
             // You can reproduce this buggy behaviour by clicking on the dock icon, proving it's an OS bug
             let originSpaceId = Spaces.currentSpaceId
-            let targetOnCurrentSpace = self.spaceIds.contains(originSpaceId)
-            let originFrontPid = targetOnCurrentSpace ? nil : NSWorkspace.shared.frontmostApplication?.processIdentifier
+            // Only repair the origin Space (step 4) when we KNOW the target is on another Space. Empty spaceIds
+            // means "Space unknown": the window was missing from the last CGS map (Slack windows drop out of it,
+            // and it goes stale after sleep/monitor changes until syncSpacesState re-queries). Treating unknown
+            // as cross-Space ran SLSSpaceSetFrontPSN on the CURRENT Space, re-fronting the previous app and
+            // undoing the raise while the window stayed key (#5586, the Slack-after-sleep variant).
+            // AltTab knows exactly which window it is focusing — record it so the coming app activation
+            // bumps this window directly instead of divining the focus from a racy 808 / AX read (#5596).
+            WindowServerEvents.noteAltTabInitiatedFocus(cgWindowId!, application.pid)
+            let targetMaybeCrossSpace = !self.spaceIds.isEmpty && !self.spaceIds.contains(originSpaceId)
+            let originFrontPid = targetMaybeCrossSpace ? NSWorkspace.shared.frontmostApplication?.processIdentifier : nil
             BackgroundWork.accessibilityCommandsQueue.addOperation { [weak self] in
                 guard let self else { return }
                 if self.isMinimized {
@@ -284,13 +291,22 @@ class Window {
                 //      the origin Space for a cross-Space focus.
                 //   2. makeKeyWindow: make it key, via a synthetic mouse-down/up aimed just outside the window,
                 //      so it becomes key without clicking its content (a top-left click would hit fullscreen UI, #5381).
-                //   3. focusWindow (kAXRaiseAction): raise it within the app's own window stack.
+                //   3. raiseWindow (kAXRaiseAction): raise it within the app's own window stack. If our cached
+                //      element went stale (the app silently rebuilt the window's a11y node, #5586), this returns
+                //      .invalidUIElement and no-ops, so re-resolve the live element by wid, retry, and heal the
+                //      cache; _SLPS/makeKeyWindow above use the wid/psn directly so they're unaffected.
                 //   4. cross-Space only: restore the origin Space's front process (see snapshot above).
                 var psn = ProcessSerialNumber()
                 GetProcessForPID(self.application.pid, &psn)
                 _SLPSSetFrontProcessWithOptions(&psn, self.cgWindowId!, SLPSMode.userGenerated.rawValue)
                 makeKeyWindow(&psn, self.cgWindowId!)
-                try? self.axUiElement!.focusWindow()
+                if self.axUiElement!.raiseWindow() == .invalidUIElement, let fresh = self.refreshedAxElement() {
+                    fresh.raiseWindow()
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self, self.axUiElement != fresh else { return }
+                        self.rebindAxElement(fresh)
+                    }
+                }
                 // step 4 (#4507): undo step 1's clobber of the origin Space. The front-switch made that Space
                 // remember our app as its front; restore the app that was there before (snapshotted above) so
                 // returning shows it, not our window. Cross-Space only (originFrontPid is nil otherwise), and
@@ -338,6 +354,8 @@ class Window {
 
     private func updateSpaces(_ windowToSpacesMap: [CGWindowID: [CGSSpaceID]]? = nil) {
         guard let cgWindowId else { return }
+        let wasEmpty = self.spaceIds.isEmpty
+        let wasPhantom = self.isPhantom
         // No blocking CGS fallback here: callers always supply the map (resolved off-main, or the current
         // Space at creation). A window absent from the map is treated as on no queried Space (#5721).
         var spaceIds = windowToSpacesMap?[cgWindowId] ?? []
@@ -348,7 +366,39 @@ class Window {
         self.spaceIds = spaceIds
         self.spaceIndexes = spaceIds.compactMap { spaceId in Spaces.idsAndIndexes.first { $0.0 == spaceId }?.1 }
         self.isOnAllSpaces = spaceIds.count > 1
+        // A window whose Spaces briefly went empty then came back (mid Space-transition, e.g. going fullscreen)
+        // was latched phantom on the empty reading by the monotonic `recomputeIsPhantom`; clear it now that CGS
+        // placed it again. Safe: a weak-signal phantom always keeps a non-empty Space, so it never recovers here.
+        if wasEmpty, !spaceIds.isEmpty { self.isPhantom = false }
         recomputeIsPhantom()
+        dropStaleWindowlessPlaceholderIfUnphantomed(wasPhantom)
+    }
+
+    /// Apply one Space-membership delta from a WindowServer 1325/1326 event. The notification payload carries
+    /// the (spaceId, wid) pair, so we mutate `spaceIds` directly — no CGS re-query. Mirrors `updateSpaces`'s
+    /// derivation of `spaceIndexes`/`isOnAllSpaces`/`screenId`. Returns whether `spaceIds` actually changed.
+    @discardableResult
+    func applySpaceMembershipDelta(_ spaceId: CGSSpaceID, added: Bool) -> Bool {
+        let wasEmpty = self.spaceIds.isEmpty
+        let wasPhantom = self.isPhantom
+        var ids = self.spaceIds
+        if added {
+            guard !ids.contains(spaceId) else { return false }
+            ids.append(spaceId)
+        } else {
+            guard let i = ids.firstIndex(of: spaceId) else { return false }
+            ids.remove(at: i)
+        }
+        self.spaceIds = ids
+        self.spaceIndexes = ids.compactMap { spaceId in Spaces.idsAndIndexes.first { $0.0 == spaceId }?.1 }
+        self.isOnAllSpaces = ids.count > 1
+        updateScreenId()
+        // See updateSpaces: clear a phantom latched while this window's Spaces were briefly empty (mid
+        // Space-transition), now that a Space delta restored membership.
+        if wasEmpty, !ids.isEmpty { self.isPhantom = false }
+        recomputeIsPhantom()
+        dropStaleWindowlessPlaceholderIfUnphantomed(wasPhantom)
+        return true
     }
 
     private func updateScreenId() {
@@ -387,14 +437,14 @@ class Window {
         return nil
     }
 
-    /// Scenarios addressed by this:
-    /// * Some apps will not trigger AXApplicationActivated, where we usually update application.focusedWindow
-    /// * Sometimes, we subscribe to an app after it has emitted the focusedWindow / applicationActivated events, so we never receive these
+    /// Seed MRU focus order at window creation. WindowServer's focus event (808) keeps it live afterward, but
+    /// a window discovered AFTER its app was already frontmost (e.g. cold launch) never saw an 808 for it, so
+    /// read kAXFocusedWindow once and, if it points at this window, bump it to the front (#5665).
     private func checkIfFocused() {
         let app = application
         guard let appAxUiElement = app.axUiElement else { return }
         AXCallScheduler.shared.schedule(key: "wid-\(cgWindowId)-focus", context: debugId, pid: app.pid) { [weak app] in
-            guard let app, let focusedWindow = try appAxUiElement.attributes([kAXFocusedWindowAttribute]).focusedWindow else { return }
+            guard let app, let focusedWindow = try appAxUiElement.attributes([kAXFocusedWindowAttribute], pid: app.pid).focusedWindow else { return }
             let focusedWid = try focusedWindow.cgWindowId()
             DispatchQueue.main.async {
                 guard let window = (Windows.list.first { $0.isEqualRobust(focusedWindow, focusedWid) }) else { return }

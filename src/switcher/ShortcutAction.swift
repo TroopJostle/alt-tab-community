@@ -34,10 +34,6 @@ enum ShortcutActions {
             guard SwitcherSession.isActive else { return }
             TilesView.toggleSearchModeFromShortcut()
         }),
-        ShortcutAction(id: "lockSearchShortcut", perform: {
-            guard SwitcherSession.isActive, TilesView.isSearchModeOn else { return }
-            TilesView.lockSearchMode()
-        }),
     ]
 
     private static let byId: [String: ShortcutAction] = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })

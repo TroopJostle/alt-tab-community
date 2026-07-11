@@ -30,6 +30,8 @@
 "AltTab is a free, open-source window switcher for macOS. Pro features are available with a 14-day free trial." = "AltTab adalah pengalih jendela gratis dan sumber terbuka untuk macOS. Fitur Pro tersedia dengan uji coba gratis 14 hari.";
 "AltTab is running without Screen Recording permissions. %@ won’t show." = "AltTab berjalan tanpa izin Perekaman Layar. %@ tidak akan ditampilkan.";
 "AltTab needs some permissions" = "AltTab memerlukan beberapa izin";
+"AltTab preferences file is a symlink. macOS doesn’t support symlink for preferences. Please use a valid file instead of a symlink here:" = "Berkas preferensi AltTab adalah tautan simbolik. macOS tidak mendukung tautan simbolik untuk preferensi. Harap gunakan berkas yang valid alih-alih tautan simbolik di sini:";
+"AltTab preferences file isn’t writable by your account. Please fix ownership and permissions of the file here:" = "Berkas preferensi AltTab tidak dapat ditulis oleh akun Anda. Harap perbaiki kepemilikan dan izin berkas di sini:";
 "AltTab Pro" = "AltTab Pro";
 "AltTab Pro adds 4 features beyond the free switcher." = "AltTab Pro menambahkan 4 fitur di luar pengalih gratis.";
 "AltTab Pro is still available" = "AltTab Pro masih tersedia";
@@ -140,7 +142,6 @@
 "License doesn't cover this version" = "Lisensi tidak mencakup versi ini";
 "License will remain valid and usable to activate AltTab on any machine" = "Lisensi akan tetap valid dan dapat digunakan untuk mengaktifkan AltTab pada mesin mana pun";
 "Light" = "Terang";
-"Lock search" = "Kunci pencarian";
 "Machine %@" = "Mesin %@";
 "macOS reserves ⌘⌥⎋, ⌘⌥⇧⎋, and ⌘⌥⇧⌃⎋ for Force Quit and they cannot be unbound. AltTab cannot use them.\n\nYour change would assign one of these to: %@." = "macOS mencadangkan ⌘⌥⎋, ⌘⌥⇧⎋, dan ⌘⌥⇧⌃⎋ untuk Paksa Keluar dan tidak dapat dilepaskan. AltTab tidak dapat menggunakannya.\n\nPerubahan Anda akan menetapkan salah satunya ke: %@.";
 "Manage activations, view receipts, etc" = "Kelola aktivasi, lihat tanda terima, dll";
@@ -316,5 +317,6 @@
 "Your feedback will be submitted as a public GitHub issue." = "Masukan Anda akan dikirim sebagai isu GitHub publik.";
 "Your license doesn't cover this version. Upgrade to Lifetime Pro." = "Lisensi Anda tidak mencakup versi ini. Tingkatkan ke Lifetime Pro.";
 "Your Pro trial ends in 2 days" = "Uji coba Pro Anda berakhir dalam 2 hari";
+"Your settings reset every time AltTab restarts." = "Pengaturan Anda diatur ulang setiap kali AltTab dimulai ulang.";
 "Your trial includes Pro features" = "Uji coba Anda mencakup fitur Pro";
 "YOUR USAGE SO FAR" = "PENGGUNAAN ANDA SEJAUH INI";

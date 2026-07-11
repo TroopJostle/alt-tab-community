@@ -39,7 +39,6 @@ class TilesView {
 
     static var isSearchModeOn: Bool { searchMode != .off }
     static var isSearchEditing: Bool { searchMode == .editing }
-    static var isSearchLocked: Bool { searchMode == .locked }
 
     static func startSearchSession(_ startInSearchMode: Bool) {
         searchField.stringValue = ""
@@ -75,32 +74,17 @@ class TilesView {
         focusSelectedTileIfPossible()
     }
 
-    static func lockSearchMode() {
-        switch SearchModeResolver.lock(mode: searchMode, canLockSearch: true) {
-            case .lockResults:
-                searchMode = .locked
-                updateSearchFieldEditability()
-                focusSelectedTileIfPossible()
-            case .unlockToEditing:
-                enableSearchEditing()
-            default:
-                return
-        }
-    }
-
     static func enableSearchEditing() {
         switch SearchModeResolver.enableEditing(mode: searchMode, canSearch: true) {
             case .placeCaretOnly:
                 placeSearchCaretAtEnd()
-            case .enterEditing(let refreshUi):
+            case .enterEditing:
                 searchMode = .editing
                 updateSearchFieldEditability()
                 SwitcherSession.current?.forceDoNothingOnRelease = true
                 clearHover()
                 stopKeyRepeatTimers()
-                if refreshUi {
-                    App.refreshUi(true)
-                }
+                App.refreshUi(true)
                 TilesPanel.shared.makeFirstResponder(searchField)
                 placeSearchCaretAtEnd()
             default:
@@ -109,14 +93,13 @@ class TilesView {
     }
 
     static func handleSearchEditingKeyDown(_ event: NSEvent) -> SearchKeyResult {
+        let isPrintable = eventProducesText(event)
         let decision = SearchModeResolver.routeKey(
             hasMarkedText: hasMarkedText(),
             isMenuOpen: ContextMenuEvents.isMenuOpen,
             arrow: arrowCycleDirection(event.keyCode),
             isTab: Int(event.keyCode) == kVK_Tab,
-            matchesCancel: matchesShortcut(event, "cancelShortcut"),
-            matchesLockSearch: matchesShortcut(event, "lockSearchShortcut"),
-            matchesFocus: matchesShortcut(event, "focusWindowShortcut"))
+            matchesShortcut: matchesAnyWhenActiveShortcut(event, isPrintable))
         switch decision {
             case .cycleSelection(let direction):
                 App.cycleSelection(cycleToDirection(direction))
@@ -221,14 +204,39 @@ class TilesView {
         (searchField.currentEditor() as? NSTextView)?.hasMarkedText() == true
     }
 
-    private static func matchesShortcut(_ event: NSEvent, _ shortcutId: String) -> Bool {
+    /// While editing the search field, any when-active shortcut (close / minimize / quit / fullscreen /
+    /// hide / focus / cancel / search) can be triggered by re-pressing the hold modifiers (e.g.
+    /// Cmd+Option+W); a bare printable key still types into the field. `Preferences.staticShortcutKeys`
+    /// is the single source of truth for the set. See `SearchModeResolver.editingShortcutMatch`.
+    private static func matchesAnyWhenActiveShortcut(_ event: NSEvent, _ isPrintable: Bool) -> Bool {
+        Preferences.staticShortcutKeys.contains { matchesShortcut(event, $0, isPrintable) }
+    }
+
+    private static func matchesShortcut(_ event: NSEvent, _ shortcutId: String, _ isPrintable: Bool) -> Bool {
         guard let shortcut = ControlsTab.shortcuts[shortcutId]?.shortcut else { return false }
         if shortcut.keyCode == .none || shortcut.carbonKeyCode != UInt32(event.keyCode) { return false }
         let shortcutIndex = SwitcherSession.current?.shortcutIndex ?? 0
         let holdModifiers = ControlsTab.shortcuts[Preferences.indexToName("holdShortcut", shortcutIndex)]?.shortcut.carbonModifierFlags.cleaned() ?? 0
         let eventModifiers = cocoaToCarbonFlags(event.modifierFlags).cleaned()
         let shortcutModifiers = shortcut.carbonModifierFlags.cleaned()
-        return eventModifiers == shortcutModifiers || eventModifiers == (shortcutModifiers | holdModifiers)
+        let hasCommandModifier = (shortcutModifiers & (UInt32(cmdKey) | UInt32(controlKey))) != 0
+        return SearchModeResolver.editingShortcutMatch(
+            eventModifiers: eventModifiers,
+            shortcutModifiers: shortcutModifiers,
+            holdModifiers: holdModifiers,
+            isPrintable: isPrintable,
+            shortcutHasCommandModifier: hasCommandModifier)
+    }
+
+    /// Whether this key-down inserts text into the field (a letter / digit / punctuation / space) as
+    /// opposed to a control key (Escape / Return / Tab / arrows / function keys). Lets a plain typed
+    /// key beat a when-active shortcut bound to it. See `SearchModeResolver.editingShortcutMatch`.
+    private static func eventProducesText(_ event: NSEvent) -> Bool {
+        guard let scalar = event.charactersIgnoringModifiers?.unicodeScalars.first else { return false }
+        let v = scalar.value
+        if v < 0x20 || v == 0x7F { return false }      // C0 control characters + delete
+        if v >= 0xF700 && v <= 0xF8FF { return false } // arrows / function keys (NSEvent reserved range)
+        return true
     }
 
     private static func updateSearchFieldEditability() {
@@ -256,15 +264,16 @@ class TilesView {
         let kind = requiredEffectViewKind()
         contentView = cachedEffectView(for: kind)
         currentEffectViewKind = kind
+        let host = contentView.hostView
         scrollView?.removeFromSuperview()
         scrollView = ScrollView()
         if searchMode != .off {
-            contentView.addSubview(searchField)
+            host.addSubview(searchField)
         } else {
             searchField.removeFromSuperview()
         }
-        contentView.addSubview(scrollView)
-        contentView.addSubview(noWindowLabel)
+        host.addSubview(scrollView)
+        host.addSubview(noWindowLabel)
     }
 
     static func swapBackgroundViewIfNeeded() {
@@ -273,11 +282,12 @@ class TilesView {
         guard desired != currentEffectViewKind else { return }
         let newView = cachedEffectView(for: desired)
         currentEffectViewKind = desired
-        if searchField.superview === contentView {
-            newView.addSubview(searchField)
+        let host = newView.hostView
+        if searchField.superview === contentView.hostView {
+            host.addSubview(searchField)
         }
-        newView.addSubview(scrollView)
-        newView.addSubview(noWindowLabel)
+        host.addSubview(scrollView)
+        host.addSubview(noWindowLabel)
         contentView = newView
         TilesPanel.shared.contentView = newView
     }
@@ -295,7 +305,6 @@ class TilesView {
     static func reset() {
         // it would be nicer to remove this whole "reset" logic, and instead update each component to check Appearance properties before showing
         // Maybe in some Appkit willDraw() function that triggers before drawing it
-        Tooltips.hideAll()
         NSScreen.updatePreferred()
         Appearance.update()
         // thumbnails are captured continuously. They will pick up the new size on the next cycle
@@ -308,8 +317,11 @@ class TilesView {
         }
         updateBackgroundView()
         TilesPanel.shared.contentView = contentView
-        for i in 0..<TilesView.recycledViews.count {
-            TilesView.recycledViews[i] = TileView()
+        // Reuse the pooled tiles instead of reallocating them: recreating freed the tooltip-owning
+        // subviews while NSToolTipManager still referenced them, crashing when an in-flight tooltip
+        // timer fired. reapplyAppearance() refreshes the construction-time appearance state in place.
+        for view in TilesView.recycledViews {
+            view.reapplyAppearance()
         }
         thumbnailUnderLayer = TileUnderLayer()
         thumbnailOverView = TileOverView()
@@ -565,13 +577,17 @@ class TilesView {
             originY = originY - Appearance.intraCellPadding - labelHeight
         }
         contentView.frame.size = NSSize(width: frameWidth, height: frameHeight)
+        let host = contentView.hostView
+        if host !== contentView {
+            host.frame = CGRect(origin: .zero, size: NSSize(width: frameWidth, height: frameHeight))
+        }
         let scrollHeight = max(0, min(maxY, heightMax) - appIconsBottomViewportPadding * 2)
         scrollView.frame.size = NSSize(width: TilesView.thumbnailsWidth, height: scrollHeight)
         scrollView.frame.origin = CGPoint(x: originX, y: originY + appIconsBottomViewportPadding * 2)
         scrollView.contentView.frame.size = scrollView.frame.size
         if searchMode != .off {
-            if searchField.superview !== contentView {
-                contentView.addSubview(searchField)
+            if searchField.superview !== host {
+                host.addSubview(searchField)
             }
             let searchWidth = minSearchWidth
             searchField.frame.size = NSSize(width: searchWidth, height: searchBarHeight)

@@ -8,7 +8,6 @@ class ShortcutsWhenActiveSheet: SheetWindow {
     private static let labelPrevious = ControlsTab.staticShortcutLabels["previousWindowShortcut"]!
     private static let labelCancel = ControlsTab.staticShortcutLabels["cancelShortcut"]!
     private static let labelSearch = ControlsTab.staticShortcutLabels["searchShortcut"]!
-    private static let labelLockSearch = ControlsTab.staticShortcutLabels["lockSearchShortcut"]!
     private static let labelClose = ControlsTab.staticShortcutLabels["closeWindowShortcut"]!
     private static let labelMinDemin = ControlsTab.staticShortcutLabels["minDeminWindowShortcut"]!
     private static let labelFullscreen = ControlsTab.staticShortcutLabels["toggleFullscreenWindowShortcut"]!
@@ -19,7 +18,7 @@ class ShortcutsWhenActiveSheet: SheetWindow {
     static let searchableStrings: [String] = [
         title,
         labelFocus, labelPrevious, labelCancel,
-        labelSearch, labelLockSearch,
+        labelSearch,
         labelClose, labelMinDemin, labelFullscreen, labelQuit, labelHideShow,
     ]
 
@@ -46,8 +45,6 @@ class ShortcutsWhenActiveSheet: SheetWindow {
         _ = table.addRow(cancelShortcut)
         _ = table.addRow(leftText: Self.labelSearch,
             rightViews: [LabelAndControl.makeLabelWithRecorder(Self.labelSearch, "searchShortcut", Preferences.searchShortcut, labelPosition: .right)[0]])
-        _ = table.addRow(leftText: Self.labelLockSearch,
-            rightViews: [LabelAndControl.makeLabelWithRecorder(Self.labelLockSearch, "lockSearchShortcut", Preferences.lockSearchShortcut, labelPosition: .right)[0]])
         _ = table.addRow(closeWindowShortcut)
         _ = table.addRow(minDeminWindowShortcut)
         _ = table.addRow(toggleFullscreenWindowShortcut)

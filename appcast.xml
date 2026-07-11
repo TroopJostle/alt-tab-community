@@ -5,6 +5,62 @@
     <language>en</language>
 
     <item>
+      <title>Version 11.4.3</title>
+      <pubDate>Thu, 09 Jul 2026 13:42:25 +0000</pubDate>
+      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://alt-tab.app/changelog-bare</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/lwouis/alt-tab-macos/releases/download/v11.4.3/AltTab-11.4.3.zip"
+        sparkle:version="11.4.3"
+        sparkle:shortVersionString="11.4.3"
+        sparkle:edSignature="hXT/SagT/CjOsE0qUEcAvv762yiNzfVuPoQwzk6gFKv1w4Jk5+qYJsX+mB6/iNF8BUbb0jZmRjG+4GDY2CrDAA==" length="8220783"
+        type="application/octet-stream"/>
+    </item>
+
+
+    <item>
+      <title>Version 11.4.2</title>
+      <pubDate>Fri, 03 Jul 2026 15:26:36 +0000</pubDate>
+      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://alt-tab.app/changelog-bare</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/lwouis/alt-tab-macos/releases/download/v11.4.2/AltTab-11.4.2.zip"
+        sparkle:version="11.4.2"
+        sparkle:shortVersionString="11.4.2"
+        sparkle:edSignature="tkOn2lBRp4l/vfkARr33iGaWqP3uDpW0rjmqN3NzGeJJc0TIt2JyxrktrkStuZ57itviqKP4f0UuKYIwheVEAw==" length="8213121"
+        type="application/octet-stream"/>
+    </item>
+
+
+    <item>
+      <title>Version 11.4.1</title>
+      <pubDate>Fri, 03 Jul 2026 10:06:34 +0000</pubDate>
+      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://alt-tab.app/changelog-bare</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/lwouis/alt-tab-macos/releases/download/v11.4.1/AltTab-11.4.1.zip"
+        sparkle:version="11.4.1"
+        sparkle:shortVersionString="11.4.1"
+        sparkle:edSignature="ZeU2H1dI0MOxHVKd5XtwNNUYfMyOzWx2ceCbI23L+QgGQ0Rqe+EifXN/L+kSQ84sQNuB71u6vcShSB2/4bc8Cw==" length="8213239"
+        type="application/octet-stream"/>
+    </item>
+
+
+    <item>
+      <title>Version 11.4.0</title>
+      <pubDate>Thu, 02 Jul 2026 15:54:12 +0000</pubDate>
+      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://alt-tab.app/changelog-bare</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/lwouis/alt-tab-macos/releases/download/v11.4.0/AltTab-11.4.0.zip"
+        sparkle:version="11.4.0"
+        sparkle:shortVersionString="11.4.0"
+        sparkle:edSignature="rKeX5NZcpjrLJ+4KJxRqijzxEVdJYkMMkX5BTw8rrp5Dbiq0P3Txx5dZE1HcLUixKz+CyMCD7L/6t2M/pFgJBw==" length="8213086"
+        type="application/octet-stream"/>
+    </item>
+
+
+    <item>
       <title>Version 11.3.1</title>
       <pubDate>Thu, 18 Jun 2026 15:44:34 +0000</pubDate>
       <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>

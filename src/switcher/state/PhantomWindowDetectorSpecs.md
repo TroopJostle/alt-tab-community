@@ -26,16 +26,21 @@ They're independent, which gives two strengths of phantom:
 ## Two entry points
 
 - **`syncVerdict(s, app)`** — synchronous, cheap, runs on every show (`Window.recomputeIsPhantom`). Has
-  only local facts, so it can observe only the strong signal. **Assert-only**: it ORs the strong signal
-  onto the current `s.isPhantom`, so it may raise the flag but never clears it. A weak-signal phantom
-  keeps its Space, which this path can't see; clearing here would clobber `cgsVerdict`'s verdict on every
-  show and the phantom would reappear on every summon (the #5714 bug).
+  only local facts, so it can observe only the strong signal. **Monotonic for the weak signal**: it ORs
+  the strong signal onto the current `s.isPhantom`, so it may raise the flag but never clears it on a
+  non-empty Space. A weak-signal phantom keeps its Space, which this path can't see; clearing there would
+  clobber `cgsVerdict`'s verdict on every show and the phantom would reappear on every summon (the #5714
+  bug). **Exception — `isTabbed` clears**: AX tab detection is authoritative but lands after a window is
+  first seen, so an inactive tab is briefly flagged phantom (empty `spaceIds`, not-yet-known tabbed); once
+  AX confirms the tab this path un-flags it (a real phantom is never part of an AXTabGroup). Without it,
+  the monotonic OR left inactive tabs stuck phantom and "separate window per tab" showed one per app.
 - **`cgsVerdict(s, app, inVisibleList, inAllList, visibleSpaceIds)`** — authoritative, runs ~250ms
   post-show off-main (`Applications.refreshIsPhantom`) with the two CGS lists. Knows both signals; owns
   the full verdict, including clearing. Disambiguation order (first match wins):
-  1. not in `inAllList` → **phantom** (strong)
-  2. in `inVisibleList` → not a phantom (currently rendered)
-  3. minimized / hidden app / tabbed → not a phantom (legitimate; tracked elsewhere)
+  1. minimized / hidden app / tabbed → not a phantom (legitimate; CGS may list none of these in any Space —
+     a background tab especially — so they must clear *before* the strong signal or they'd trip it)
+  2. not in `inAllList` → **phantom** (strong)
+  3. in `inVisibleList` → not a phantom (currently rendered)
   4. non-empty `spaceIds` ∩ `visibleSpaceIds` == ∅ → not a phantom (other-Space window)
   5. else → **phantom** (weak: alpha=0 / `orderOut:` on a visible Space)
 
@@ -50,6 +55,8 @@ and flips the knobs it exercises.
 - **testNeverClearsAPhantom** — already a phantom + non-empty `spaceIds` → **stays a phantom** (the #5714
   invariant: the synchronous path never clears an authoritative verdict).
 - **testTabbedWithEmptySpacesNotRaised** — empty Space but tabbed → not flagged.
+- **testTabbedClearsAStalePhantom** — already a phantom + empty Space but now tabbed → **cleared** (the
+  inactive-tab regression: AX confirms the tab, so the synchronous path drops the stale verdict).
 - **testMinimizedWithEmptySpacesNotRaised** — empty Space but minimized → not flagged.
 - **testHiddenAppWithEmptySpacesNotRaised** — empty Space but app hidden → not flagged.
 
@@ -62,3 +69,9 @@ and flips the knobs it exercises.
 - **testMinimizedIsNotPhantom** — in-all, not-visible, minimized → not a phantom.
 - **testHiddenAppIsNotPhantom** — in-all, not-visible, app hidden → not a phantom.
 - **testTabbedIsNotPhantom** — in-all, not-visible, tabbed → not a phantom.
+- **testTabbedMissingFromAllListsIsNotPhantom** — tabbed but missing from *both* CGS lists (the real
+  inactive background tab: CGS lists no tab, so its `spaceIds` are sibling-backfilled) → not a phantom.
+  Regression for the fullscreen-tab / "separate window per tab" disappearance — the legitimate-window
+  exemption must beat the strong signal.
+- **testMinimizedMissingFromAllListsIsNotPhantom** — minimized and missing from both CGS lists → not a
+  phantom (same exemption: a legitimate window CGS dropped from its per-Space lists).

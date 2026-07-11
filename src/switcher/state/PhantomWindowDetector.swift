@@ -12,13 +12,20 @@ import Foundation
 enum PhantomWindowDetector {
     /// Synchronous, cheap — runs on every show (`Window.recomputeIsPhantom`). Knows only the STRONG
     /// signal: the window has no Space at all (CGS lost track of it — Joplin / Sprig / `show:false`
-    /// Electron). ASSERT-ONLY: it may raise `isPhantom`, never clear it. Non-empty `spaceIds` is NOT
-    /// proof of visibility — a weak-signal phantom (alpha=0 / `orderOut:` still on a Space) keeps its
-    /// Space, and that's only observable via the off-main CGS query in `cgsVerdict`. Clearing here would
-    /// clobber `cgsVerdict`'s verdict on every show, so the phantom reappears on every summon (#5714).
-    /// Reads the current verdict from `s.isPhantom`, so it's monotonic within the synchronous path.
+    /// Electron). MONOTONIC for the weak signal: a weak-signal phantom (alpha=0 / `orderOut:` still on a
+    /// Space) keeps its Space, which this path can't observe, so it may raise `isPhantom` but must never
+    /// clear it on the basis of a non-empty `spaceIds` — doing so would clobber `cgsVerdict`'s verdict on
+    /// every show and the phantom would reappear on every summon (#5714).
+    ///
+    /// EXCEPTION — `isTabbed` clears the flag. AX tab detection is authoritative but lands AFTER a window
+    /// is first seen, so an inactive tab is briefly flagged phantom (empty `spaceIds`, not-yet-known
+    /// tabbed) by `syncSpacesState` before `TabGroup.updateState` runs. Once AX confirms the tab we must
+    /// un-flag it — unlike the weak signal, this path CAN observe `isTabbed`, and a real phantom is never
+    /// part of an AXTabGroup, so clearing is safe. Without this the monotonic OR left inactive tabs stuck
+    /// phantom, so "Group tabs: separate window for each tab" showed only the active tab (one per app).
     static func syncVerdict(_ s: WindowState, _ app: ApplicationState) -> Bool {
-        s.isPhantom || (s.spaceIds.isEmpty && !s.isTabbed && !s.isMinimized && !app.isHidden)
+        if s.isTabbed { return false }
+        return s.isPhantom || (s.spaceIds.isEmpty && !s.isMinimized && !app.isHidden)
     }
 
     /// Authoritative — runs ~250ms post-show off-main (`Applications.refreshIsPhantom`) with the two CGS
@@ -27,11 +34,16 @@ enum PhantomWindowDetector {
     /// Disambiguation order matches `PhantomWindowDetection.swift`.
     static func cgsVerdict(_ s: WindowState, _ app: ApplicationState,
                            inVisibleList: Bool, inAllList: Bool, visibleSpaceIds: [UInt64]) -> Bool {
-        // strong signal: CGS dropped the WID from every Space
+        // Legitimate windows CGS may not list in any Space — an inactive tab (CGS lists no background tab,
+        // so its spaceIds are backfilled from the active sibling), a minimized window, a hidden app's
+        // window. They must be cleared BEFORE the strong signal, else "absent from every Space" flags them
+        // phantom even though they're real (the inactive-tab / fullscreen-tab disappearance). A true phantom
+        // is none of these. Mirrors syncVerdict, which exempts the same three from its strong signal.
+        if s.isTabbed || s.isMinimized || app.isHidden { return false }
+        // strong signal: CGS dropped the WID from every Space (Joplin / Sprig / show:false Electron)
         if !inAllList { return true }
         // tagged invisible by CGS — disambiguate against the legitimate reasons a window lives there
         if inVisibleList { return false }
-        if s.isMinimized || app.isHidden || s.isTabbed { return false }
         // known Spaces, none of them visible → legitimate other-Space window
         if !s.spaceIds.isEmpty && !s.spaceIds.contains(where: { visibleSpaceIds.contains($0) }) { return false }
         // weak signal: alpha=0 / orderOut: window still on a visible Space
