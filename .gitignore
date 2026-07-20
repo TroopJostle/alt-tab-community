@@ -17,7 +17,6 @@ codesign.key
 codesign.p12
 /.claude/*
 !/.claude/skills/
-/config/local.xcconfig
 /scripts/l10n/missing-translations.json
 /ai/output/
 logs/

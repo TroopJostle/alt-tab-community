@@ -1,0 +1,15 @@
+// Per-developer overrides for local unsigned builds.
+// Included via `#include? "local.xcconfig"` in debug.xcconfig / release.xcconfig.
+
+// Version injected into Info.plist ($(CURRENT_PROJECT_VERSION) -> CFBundleVersion / CFBundleShortVersionString).
+// Not defined for the app target upstream (CI writes it here), so without this the app
+// crashes on launch at App.swift:14 force-unwrapping a nil CFBundleVersion.
+CURRENT_PROJECT_VERSION = 11.4.3
+
+// Ad-hoc signing: no keychain identity required. Overrides `Local Self-Signed` from debug.xcconfig.
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM =
+
+// Empty AppCenter secret (crash reporting disabled); silences literal $(APPCENTER_SECRET) in Info.plist.
+APPCENTER_SECRET =
