@@ -36,7 +36,9 @@ class Preferences {
             "menubarIconShown": "true",
             "language": LanguagePreference.systemDefault.indexAsString,
             "exceptions": defaultExceptions(),
-            "updatePolicy": UpdatePolicyPreference.autoCheck.indexAsString,
+            // The community fork can't sign its own Sparkle updates (SUPublicEDKey is upstream's),
+            // so periodic checks could only ever offer an upstream build. Off by default.
+            "updatePolicy": UpdatePolicyPreference.manual.indexAsString,
             "crashPolicy": CrashPolicyPreference.ask.indexAsString,
             "hideThumbnails": "false",
             "hideSpaceNumberLabels": "false",
