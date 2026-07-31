@@ -19,3 +19,13 @@ CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES
 DEAD_CODE_STRIPPING = YES
 DOMAIN = alt-tab.app
 API_DOMAIN = alt-tab.app/api
+
+// Fallback so a fresh clone builds and launches without a local.xcconfig. Info.plist
+// substitutes this into CFBundleVersion, which App.swift force-unwraps at launch; an
+// unset value would crash the app immediately. CI (scripts/replace_environment_variables_in_app.sh)
+// and per-developer local.xcconfig both override it, since they're included afterwards.
+CURRENT_PROJECT_VERSION = 0.0.0
+
+// Empty by default so an unset value doesn't leave a literal $(APPCENTER_SECRET) in the
+// built Info.plist. Crash reporting stays disabled unless a local.xcconfig overrides it.
+APPCENTER_SECRET =

@@ -1,0 +1,38 @@
+// Per-developer build overrides. Copy to `local.xcconfig` and edit — that path is
+// gitignored, so your signing identity and secrets never reach the repository.
+//
+//     cp config/local.xcconfig.example config/local.xcconfig
+//
+// Included last by debug.xcconfig and release.xcconfig via `#include? "local.xcconfig"`,
+// so everything here overrides base.xcconfig. The file is optional: without it the app
+// builds and runs using the defaults in base.xcconfig.
+//
+// CI writes its own version of this file in scripts/replace_environment_variables_in_app.sh.
+
+// Version injected into Info.plist ($(CURRENT_PROJECT_VERSION) -> CFBundleVersion /
+// CFBundleShortVersionString). base.xcconfig defaults this to 0.0.0; override to build
+// something that reports a realistic version.
+CURRENT_PROJECT_VERSION = 0.0.0
+
+// Signing identity. Two options:
+//
+//   1. Ad-hoc (`-`) — no certificate needed, but macOS pins TCC grants (Accessibility,
+//      Screen Recording) to the binary's cdhash. Every rebuild silently revokes them
+//      while System Settings still shows the toggle as enabled. Fine for a one-off build.
+//
+//   2. A real certificate — an Apple Development cert from a free Apple ID is enough.
+//      TCC then keys grants to the code signature, so they survive rebuilds. Strongly
+//      preferred if you actually run your own builds day to day.
+//
+// List what you have with: security find-identity -v -p codesigning
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM =
+
+// release.xcconfig sets notarization flags (--timestamp --deep --options runtime) that
+// need a Developer ID cert. Uncomment for local Release builds with any other identity.
+// OTHER_CODE_SIGN_FLAGS = --timestamp=none
+
+// Crash reporting. Leave empty to disable it and to keep a literal $(APPCENTER_SECRET)
+// out of the built Info.plist.
+APPCENTER_SECRET =
