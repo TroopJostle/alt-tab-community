@@ -134,6 +134,7 @@ class WindowServerEvents {
             }
         case .windowDestroyed:
             unsubscribe(w0)
+            AeroSpaceWorkspaceCards.shared.notifyWindowServerChange(topologyChanged: true)
         default:
             break
         }
@@ -214,6 +215,7 @@ class WindowServerEvents {
                     Applications.windowAttributesThrottler.throttleOrProceed(key: "wid-\(w0)-wsstate") {
                         Applications.updateWindowStatesViaWindowServer([w0])
                     }
+                    AeroSpaceWorkspaceCards.shared.notifyWindowServerChange(topologyChanged: false)
                     // De-minimize likewise has no dedicated WS event; it surfaces as an order-in →
                     // re-read kAXMinimized. Like order-out, do NOT reconcile tabs here: an order-in
                     // during a fullscreen or Space transition reports the AXTabGroup inconsistently,
@@ -282,6 +284,7 @@ class WindowServerEvents {
             // rejected on size and re-discovered from its first move/resize (see .updateGeometry above). A
             // window created on another Space (discoverWindow's current-Space acquisition can't reach it) is
             // picked up by the next switcher-show full rescan.
+            AeroSpaceWorkspaceCards.shared.notifyWindowServerChange(topologyChanged: true)
             if !inSpaceTransition { Applications.discoverWindow(w0) }
         case .spaceTransition:
             // 1329/1401 fire during the transition (manuallyRefreshAllWindows above stays muted ~0.5s to

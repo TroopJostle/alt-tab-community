@@ -11,6 +11,7 @@ class SleepWakeEvents {
 
     @objc private static func handleWake(_ notification: Notification) {
         Logger.info { "" }
+        AeroSpaceWorkspaceCards.shared.notifyWindowServerChange(topologyChanged: true)
         reEnableAllTaps()
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) { reEnableAllTaps() }
     }

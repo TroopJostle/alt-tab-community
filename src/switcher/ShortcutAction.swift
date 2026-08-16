@@ -25,11 +25,26 @@ enum ShortcutActions {
                 case .closeSwitcher: App.hideUi()
             }
         }),
-        ShortcutAction(id: "closeWindowShortcut", perform: { Windows.selectedWindow()?.close() }),
-        ShortcutAction(id: "minDeminWindowShortcut", perform: { Windows.selectedWindow()?.minDemin() }),
-        ShortcutAction(id: "toggleFullscreenWindowShortcut", perform: { Windows.selectedWindow()?.toggleFullscreen() }),
-        ShortcutAction(id: "quitAppShortcut", perform: { Windows.selectedWindow()?.application.quit() }),
-        ShortcutAction(id: "hideShowAppShortcut", perform: { Windows.selectedWindow()?.application.hideOrShow() }),
+        ShortcutAction(id: "closeWindowShortcut", perform: {
+            let selected = Windows.selectedWindow()
+            if !AeroSpaceWorkspaceCards.shared.performGroupAction(.close, selected: selected) { selected?.close() }
+        }),
+        ShortcutAction(id: "minDeminWindowShortcut", perform: {
+            let selected = Windows.selectedWindow()
+            if !AeroSpaceWorkspaceCards.shared.performGroupAction(.minimize, selected: selected) { selected?.minDemin() }
+        }),
+        ShortcutAction(id: "toggleFullscreenWindowShortcut", perform: {
+            let selected = Windows.selectedWindow()
+            if !AeroSpaceWorkspaceCards.shared.performGroupAction(.fullscreen, selected: selected) { selected?.toggleFullscreen() }
+        }),
+        ShortcutAction(id: "quitAppShortcut", perform: {
+            let selected = Windows.selectedWindow()
+            if !AeroSpaceWorkspaceCards.shared.performGroupAction(.quit, selected: selected) { selected?.application.quit() }
+        }),
+        ShortcutAction(id: "hideShowAppShortcut", perform: {
+            let selected = Windows.selectedWindow()
+            if !AeroSpaceWorkspaceCards.shared.performGroupAction(.hide, selected: selected) { selected?.application.hideOrShow() }
+        }),
         ShortcutAction(id: "searchShortcut", perform: {
             guard SwitcherSession.isActive else { return }
             TilesView.toggleSearchModeFromShortcut()

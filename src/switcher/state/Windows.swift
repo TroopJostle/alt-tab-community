@@ -97,6 +97,7 @@ class Windows {
             refreshIfWindowShouldBeShownToTheUser(window, filters)
         }
         refreshWhichWindowsToShowTheUser()
+        AeroSpaceWorkspaceCards.shared.applyProjection()
         sort()
         return true
     }

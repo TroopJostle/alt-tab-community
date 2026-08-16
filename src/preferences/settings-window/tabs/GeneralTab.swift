@@ -36,6 +36,9 @@ class GeneralTab {
         cell.bezelStyle = .regularSquare
         cell.arrowPosition = .arrowAtBottom
         cell.imagePosition = .imageOverlaps
+        let aeroSpaceWorkspaceCards = TableGroupView.Row(leftTitle: "Group AeroSpace workspaces 2–5",
+            subTitle: "Keep workspace ⠀ as normal windows. Workspaces 2–5 become one proxy card each.",
+            rightViews: [LabelAndControl.makeSwitch("aeroSpaceWorkspaceCards")])
         let captureWindowsInBackground = TableGroupView.Row(leftTitle: NSLocalizedString("Capture windows in the background", comment: ""),
             subTitle: NSLocalizedString("When disabled, avoids the macOS purple screen-recording indicator, and avoids flickers when playing DRM video. Thumbnails will be less up-to-date.", comment: ""),
             rightViews: [LabelAndControl.makeSwitch("captureWindowsInBackground")])
@@ -43,6 +46,7 @@ class GeneralTab {
         table.addRow(startAtLogin)
         table.addRow(menubarIcon)
         table.addRow(captureWindowsInBackground)
+        table.addRow(aeroSpaceWorkspaceCards)
         table.addNewTable()
         table.addRow(language)
         table.addNewTable()

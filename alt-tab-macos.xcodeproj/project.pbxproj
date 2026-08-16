@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A15A00000000000000000001 /* AeroSpaceWorkspaceCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15A00000000000000000002 /* AeroSpaceWorkspaceCards.swift */; };
 		1C96101BC5817A7F85FA1F8D /* titles_show_running_applications_light@2x.heic in Resources */ = {isa = PBXBuildFile; fileRef = 1C961F57248D4E2377A9038E /* titles_show_running_applications_light@2x.heic */; };
 		1C96108A0CB2565233FE100B /* TableGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C961FB3DCF4906FEEF4A23D /* TableGroupView.swift */; };
 		1C9610F8AF7AD8CA53B62913 /* titles_hide_status_icons_light@2x.heic in Resources */ = {isa = PBXBuildFile; fileRef = 1C961E64CF8FB6E3FDAA3DAA /* titles_hide_status_icons_light@2x.heic */; };
@@ -329,6 +330,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A15A00000000000000000002 /* AeroSpaceWorkspaceCards.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AeroSpaceWorkspaceCards.swift; path = "src/reborn-modules/AeroSpaceWorkspaceCards/AeroSpaceWorkspaceCards.swift"; sourceTree = SOURCE_ROOT; };
 		02540420CE27E6C973652426 /* menubar-0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "menubar-0.pdf"; sourceTree = "<group>"; };
 		126D5AA615CEE89F73C22DA7 /* menubar-1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "menubar-1.pdf"; sourceTree = "<group>"; };
 		1C961003A0D16B9AE3932B3F /* thumbnails_show_colored_circles_light@2x.heic */ = {isa = PBXFileReference; lastKnownFileType = image.heic; path = "thumbnails_show_colored_circles_light@2x.heic"; sourceTree = "<group>"; };
@@ -865,6 +867,7 @@
 			isa = PBXGroup;
 			children = (
 				D04BACD976030676FD0761D5 /* Windows.swift */,
+				A15A00000000000000000002 /* AeroSpaceWorkspaceCards.swift */,
 				D04BA00000000000C0DE0030 /* WindowThumbnails.swift */,
 				D04BA015A45DE7AFDC9794FE /* Window.swift */,
 				D04BA282BB16C1554595A968 /* Applications.swift */,
@@ -1846,6 +1849,7 @@
 				D04BA26A691D56031FCCF00C /* Sysctl.swift in Sources */,
 				5F21C9E22C6E94410091F72F /* AdditionalControlsSheet.swift in Sources */,
 				D04BA8480A8FF466CA89DA5B /* main.swift in Sources */,
+				A15A00000000000000000001 /* AeroSpaceWorkspaceCards.swift in Sources */,
 				D04BAFB973C3D28718FAEB87 /* Windows.swift in Sources */,
 				5E1EC110000000000000C002 /* SelectionResolver.swift in Sources */,
 				5E5EA12C0000000000000002 /* SearchModeResolver.swift in Sources */,

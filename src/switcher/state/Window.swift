@@ -208,6 +208,18 @@ class Window {
         return !self.isWindowlessApp && !self.isTabbed
     }
 
+    func setMinimized(_ target: Bool) {
+        guard canBeMinDeminOrFullscreened(), self.isMinimized != target else { return }
+        if let altTabWindow = altTabWindow() {
+            target ? altTabWindow.miniaturize(nil) : altTabWindow.deminiaturize(nil)
+            return
+        }
+        BackgroundWork.accessibilityCommandsQueue.addOperation { [weak self] in
+            guard let self, let element = self.axUiElement else { return }
+            try? element.setAttribute(kAXMinimizedAttribute, target)
+        }
+    }
+
     func minDemin() {
         if !canBeMinDeminOrFullscreened() {
             NSSound.beep()

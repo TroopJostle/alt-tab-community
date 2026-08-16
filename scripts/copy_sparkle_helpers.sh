@@ -105,5 +105,9 @@ done
 # re-seal Sparkle.framework, but Debug uses --timestamp=none without --deep, leaving the SPM
 # linker-signed adhoc seal in place — which then fails `codesign --verify --deep --strict`
 # because that seal references resources the framework no longer matches.
-IDENT="${EXPANDED_CODE_SIGN_IDENTITY:-${CODE_SIGN_IDENTITY:--}}"
-codesign --force --sign "$IDENT" "$SPARKLE_FW"
+if [ "${CODE_SIGNING_ALLOWED:-YES}" != "NO" ]; then
+    IDENT="${EXPANDED_CODE_SIGN_IDENTITY:-${CODE_SIGN_IDENTITY:--}}"
+    codesign --force --sign "$IDENT" "$SPARKLE_FW"
+else
+    echo "Skipping codesign because CODE_SIGNING_ALLOWED=NO"
+fi

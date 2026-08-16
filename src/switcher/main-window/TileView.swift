@@ -13,6 +13,9 @@ class TileView: FlippedView {
     var statusIcons = StatusIconsView()
     var dockLabelIcon = TileFontIconView(badgeSize: TileFontIconView.badgeBaseSize(forIconSize: TileView.iconSize().width))
     var windowlessAppIndicator = WindowlessAppIndicator(tooltip: TileView.noOpenWindowToolTip)
+    var aeroSpacePreviewLayers = [LightImageLayer]()
+    var aeroSpaceIconLayers = [LightImageLayer]()
+    var aeroSpaceDecorationLayers = [CALayer]()
     private var fullTitle = ""
     private var fullTitleWidth = CGFloat(0)
 
@@ -76,6 +79,7 @@ class TileView: FlippedView {
         updateSizes(newHeight)
         updatePositions(newHeight)
         applySearchHighlight()
+        AeroSpaceWorkspaceCards.shared.configurePresentation(in: self, for: element)
     }
 
     func drawHighlight() {
@@ -297,7 +301,8 @@ class TileView: FlippedView {
         )
         if !thumbnail.isHidden {
             if let screenshot = element.thumbnail {
-                let thumbnailSize = TileView.thumbnailSize(element.size, false)
+                let sourceSize = AeroSpaceWorkspaceCards.shared.previewSize(for: element, fallback: element.size)
+                let thumbnailSize = TileView.thumbnailSize(sourceSize, false)
                 thumbnail.updateContents(screenshot, thumbnailSize)
             } else {
                 // if no thumbnail, show appIcon instead

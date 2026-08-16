@@ -229,6 +229,7 @@ class App: AppCenterApplication {
         guard SwitcherSession.isActive else { return } // already hidden
         hideUi(true)
         if let window = selectedWindow, MissionControl.state() == .inactive || MissionControl.state() == .showDesktop {
+            if AeroSpaceWorkspaceCards.shared.activateIfProxy(window) { return }
             window.focus()
             if Preferences.cursorFollowFocus == .always || (
                 Preferences.cursorFollowFocus == .differentScreen && (Spaces.screenSpacesMap.first { $0.value.contains { space in window.spaceIds.contains(space) } })?.key != NSScreen.active()?.cachedUuid()) {
@@ -423,6 +424,7 @@ extension App: NSApplicationDelegate {
         WindowServerEvents.observe()
         AXUIElement.setGlobalTimeout()
         Preferences.initialize()
+        AeroSpaceWorkspaceCards.shared.start()
         PreferencesPersistenceCheck.runInBackground()
         SystemPermissions.ensurePermissionsAreGranted()
     }
