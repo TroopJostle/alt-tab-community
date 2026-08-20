@@ -209,17 +209,15 @@ private enum MakeKeyWindowEvent {
     /// WindowServer parses is identical to before we widened the buffer.
     static let lengthOffset = 0x04
     static let recordLength: UInt8 = 0xf8
-    /// 0x08: the `CGSEventType`. We post a left-mouse-down then -up; the pair makes the window key. These
-    /// match the public `CGEventType` values.
+    /// 0x08: the `CGSEventType`, matching the public `CGEventType` values. A down alone makes the target key;
+    /// omitting the up prevents apps from interpreting the synthetic focus event as a content or resize click.
     static let eventTypeOffset = 0x08
     static let leftMouseDown: UInt8 = 0x01 // kCGEventLeftMouseDown
-    static let leftMouseUp: UInt8 = 0x02 // kCGEventLeftMouseUp
-    /// 0x20: `windowLocation`, the window-relative click point (a 16-byte CGPoint). We aim just outside the
-    /// window's top-left corner: the mouse-down still makes it key, but the point hit-tests to no view, so
-    /// nothing is clicked (avoids #5381's top-left hit in fullscreen, and any top-left chrome when windowed).
-    /// Kept small: a wild value risks an app clamping it back to (0,0), i.e. onto real content.
+    /// 0x20: `windowLocation`, the window-relative click point (a 16-byte CGPoint). A point just outside the
+    /// frame can land in a resize region, while some apps sanitize negative coordinates to (0, 0). Aim far
+    /// beyond the bottom-right so the event remains off-content even when an app clamps it.
     static let windowLocationOffset = 0x20
-    static let offContentPoint = CGPoint(x: -1, y: -1)
+    static let offContentPoint = CGPoint(x: 300_000, y: 300_000)
     /// 0x3c: the target `CGWindowID`. The event is delivered to this window by id, not by the coordinate.
     static let windowIdOffset = 0x3c
     /// 0x3a: purpose undocumented. yabai and Hammerspoon set it to 0x10.
@@ -227,11 +225,11 @@ private enum MakeKeyWindowEvent {
     static let unknownFlagValue: UInt8 = 0x10
 }
 
-/// Makes the window `wid` the key window of its app by posting a synthetic left-click (down then up) to
+/// Makes the window `wid` the key window of its app by posting a synthetic left-mouse-down to
 /// the WindowServer. No public API moves key focus across apps. Ported from
 /// https://github.com/Hammerspoon/hammerspoon/issues/370#issuecomment-545545468 (yabai's
-/// `window_manager_make_key_window`). The click is aimed just outside the window (see `offContentPoint`)
-/// so it makes the window key without actually clicking any of its content.
+/// `window_manager_make_key_window`), with no mouse-up and aimed far off-window so the target becomes key
+/// without clicking content or a resize region.
 func makeKeyWindow(_ psn: inout ProcessSerialNumber, _ wid: CGWindowID) {
     var wid = wid
     var point = MakeKeyWindowEvent.offContentPoint
@@ -240,12 +238,8 @@ func makeKeyWindow(_ psn: inout ProcessSerialNumber, _ wid: CGWindowID) {
     bytes[MakeKeyWindowEvent.unknownFlagOffset] = MakeKeyWindowEvent.unknownFlagValue
     // deliver the event to this specific window by id (not by the click point below)
     memcpy(&bytes[MakeKeyWindowEvent.windowIdOffset], &wid, MemoryLayout<CGWindowID>.size)
-    // window-relative click point just outside the frame: makes the window key, but hit-tests to no view
     memcpy(&bytes[MakeKeyWindowEvent.windowLocationOffset], &point, MemoryLayout<CGPoint>.size)
-    // post a left-mouse-down then -up; the app reads the pair as "you are now key"
     bytes[MakeKeyWindowEvent.eventTypeOffset] = MakeKeyWindowEvent.leftMouseDown
-    SLPSPostEventRecordTo(&psn, &bytes)
-    bytes[MakeKeyWindowEvent.eventTypeOffset] = MakeKeyWindowEvent.leftMouseUp
     SLPSPostEventRecordTo(&psn, &bytes)
 }
 
