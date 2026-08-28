@@ -18,6 +18,8 @@ class ScreensEvents {
             Logger.debug { notification.name.rawValue }
             Spaces.refresh()
             Screens.refresh()
+            NSScreen.updatePreferred()
+            AppearanceTab.refreshDisplayDropdown()
             // a screen added or removed, or screen resolution change can mess up layout; we reset components
             App.resetPreferencesDependentComponents()
             // a screen added or removed can shuffle windows around Spaces; we refresh them

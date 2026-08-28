@@ -12,6 +12,7 @@ class PreferencesEvents {
         "appearanceSize",
         "appearanceTheme",
         "showOnScreen",
+        "preferredScreen",
     ]
 
     /// True if `key` is an indexed override of one of the 5 overridable appearance prefs

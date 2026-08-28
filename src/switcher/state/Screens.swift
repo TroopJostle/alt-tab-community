@@ -26,7 +26,16 @@ extension NSScreen {
             case .includingMouse: return withMouse()
             case .active: return NSScreen.active()
             case .includingMenubar: return NSScreen.screens.first
+            case .specific: return specific()
         }
+    }
+
+    private static func specific() -> NSScreen? {
+        let screens = NSScreen.screens
+        let connected = screens.compactMap { $0.cachedUuid() as String? }
+        let fallback = (active() ?? screens.first)?.cachedUuid() as String?
+        guard let preferredUuid = DisplaySelectionResolver.preferredUuid(Preferences.preferredScreen, connected, fallback) else { return nil }
+        return screens.first { ($0.cachedUuid() as String?) == preferredUuid }
     }
 
     /// NSScreen.main docs are incorrect. It stopped returning the screen with the key window in macOS 10.9

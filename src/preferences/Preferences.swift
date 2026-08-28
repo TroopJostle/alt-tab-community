@@ -27,6 +27,7 @@ class Preferences {
             "appearanceTheme": AppearanceThemePreference.system.indexAsString,
             "theme": ThemePreference.macOs.indexAsString,
             "showOnScreen": ShowOnScreenPreference.active.indexAsString,
+            "preferredScreen": "",
             "titleTruncation": TitleTruncationPreference.end.indexAsString,
             "showTitles": ShowTitlesPreference.windowTitle.indexAsString,
             "fadeOutAnimation": "false",
@@ -132,6 +133,7 @@ class Preferences {
     // periphery:ignore
     static var theme: ThemePreference { ThemePreference.macOs/*CachedUserDefaults.macroPref("theme", ThemePreference.allCases)*/ }
     static var showOnScreen: ShowOnScreenPreference { CachedUserDefaults.macroPref("showOnScreen", ShowOnScreenPreference.allCases) }
+    static var preferredScreen: String { CachedUserDefaults.string("preferredScreen") }
     static var titleTruncation: TitleTruncationPreference { CachedUserDefaults.macroPref("titleTruncation", TitleTruncationPreference.allCases) }
     static var showTitles: ShowTitlesPreference { CachedUserDefaults.macroPref("showTitles", ShowTitlesPreference.allCases) }
     static var updatePolicy: UpdatePolicyPreference { CachedUserDefaults.macroPref("updatePolicy", UpdatePolicyPreference.allCases) }

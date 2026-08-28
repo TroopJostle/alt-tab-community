@@ -410,6 +410,7 @@ class AppearanceTab: NSObject {
     static var animationsButton: NSButton!
     static var customizeStyleSheet: CustomizeStyleSheet!
     static var animationsSheet: AnimationsSheet!
+    private static var preferredScreenDropdown: NSPopUpButton?
 
     /// One icon button per overridable preference, parked at the trailing edge of each row (same
     /// position as the "unlink" icon in the per-shortcut Appearance section in `ControlsTab`).
@@ -434,6 +435,7 @@ class AppearanceTab: NSObject {
         animationsButton = nil
         customizeStyleSheet = nil
         animationsSheet = nil
+        preferredScreenDropdown = nil
         overrideInfoIcons.removeAll()
     }
 
@@ -568,9 +570,64 @@ class AppearanceTab: NSObject {
 
     private static func makeMultipleScreensView() -> NSView {
         let table = TableGroupView(title: NSLocalizedString("Multiple screens", comment: ""), width: SettingsWindow.contentWidth)
+        let showOnScreenDropdown = LabelAndControl.makeDropdown("showOnScreen", ShowOnScreenPreference.allCases, extraAction: { _ in
+            refreshDisplayDropdown()
+            persistFirstDisplayWhenNeeded()
+        })
         _ = table.addRow(leftText: NSLocalizedString("Show on", comment: ""),
-            rightViews: LabelAndControl.makeDropdown("showOnScreen", ShowOnScreenPreference.allCases))
+            rightViews: [showOnScreenDropdown])
+        preferredScreenDropdown = PopupButtonLikeSystemSettings()
+        preferredScreenDropdown!.identifier = NSUserInterfaceItemIdentifier("preferredScreen")
+        preferredScreenDropdown!.onAction = { control in selectDisplay(control as! NSPopUpButton) }
+        SettingsSearchIndex.registerString(NSLocalizedString("Specific screen", comment: ""))
+        SettingsSearchIndex.registerTarget(SettingsWindow.highlightTarget(preferredScreenDropdown!))
+        _ = table.addRow(leftText: NSLocalizedString("Specific screen", comment: ""), rightViews: [preferredScreenDropdown!])
+        refreshDisplayDropdown()
         return table
+    }
+
+    static func refreshDisplayDropdown() {
+        guard let dropdown = preferredScreenDropdown else { return }
+        let selectedUuid = Preferences.preferredScreen
+        let displays = displayOptions()
+        dropdown.removeAllItems()
+        if !selectedUuid.isEmpty && !displays.contains(where: { $0.uuid == selectedUuid }) {
+            addDisplayItem(dropdown, NSLocalizedString("Previously selected screen (disconnected)", comment: ""), selectedUuid)
+        }
+        displays.forEach { addDisplayItem(dropdown, $0.title, $0.uuid) }
+        let selectedIndex = dropdown.itemArray.firstIndex { ($0.representedObject as? String) == selectedUuid }
+        dropdown.selectItem(at: selectedIndex ?? (dropdown.numberOfItems > 0 ? 0 : -1))
+        dropdown.isEnabled = Preferences.showOnScreen == .specific && !displays.isEmpty
+    }
+
+    private static func displayOptions() -> [(title: String, uuid: String)] {
+        NSScreen.screens.enumerated().compactMap { index, screen in
+            guard let uuid = screen.cachedUuid() as String? else { return nil }
+            let name: String
+            if #available(macOS 10.15, *) {
+                name = screen.localizedName
+            } else {
+                name = String(format: NSLocalizedString("Screen %d", comment: ""), index + 1)
+            }
+            let size = "\(Int(screen.frame.width))×\(Int(screen.frame.height))"
+            return ("\(name) — \(size)", uuid)
+        }
+    }
+
+    private static func addDisplayItem(_ dropdown: NSPopUpButton, _ title: String, _ uuid: String) {
+        dropdown.addItem(withTitle: title)
+        dropdown.lastItem?.representedObject = uuid
+    }
+
+    private static func selectDisplay(_ dropdown: NSPopUpButton) {
+        guard let uuid = dropdown.selectedItem?.representedObject as? String else { return }
+        Preferences.set("preferredScreen", uuid)
+    }
+
+    private static func persistFirstDisplayWhenNeeded() {
+        guard Preferences.showOnScreen == .specific, Preferences.preferredScreen.isEmpty,
+              let uuid = preferredScreenDropdown?.selectedItem?.representedObject as? String else { return }
+        Preferences.set("preferredScreen", uuid)
     }
 
     private static func getCustomizeStyleButtonTitle() -> String {

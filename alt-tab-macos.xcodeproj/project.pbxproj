@@ -135,6 +135,9 @@
 		5F7B6AFC2F3BAB98003E25E8 /* StatusIconsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7B6AFB2F3BAB98003E25E8 /* StatusIconsView.swift */; };
 		5F882F382EC3C63400110A9F /* CustomRecorderControlTestable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0C8DC2A355E29516DD2FAF /* CustomRecorderControlTestable.swift */; };
 		5F906A342F16A18500B99924 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F906A332F16A18000B99924 /* Screens.swift */; };
+		FD1500000000000000000002 /* DisplaySelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD1500000000000000000001 /* DisplaySelectionResolver.swift */; };
+		FD1500000000000000000003 /* DisplaySelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD1500000000000000000001 /* DisplaySelectionResolver.swift */; };
+		FD1500000000000000000102 /* DisplaySelectionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD1500000000000000000101 /* DisplaySelectionResolverTests.swift */; };
 		5FA002000000000000000019 /* LoginItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA001000000000000000019 /* LoginItem.swift */; };
 		5FA002000000000000000020 /* ShortcutConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA001000000000000000020 /* ShortcutConfiguration.swift */; };
 		5FA1E0B22F50000100A1A1A1 /* PreferencesEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA1E0B12F50000100A1A1A1 /* PreferencesEvents.swift */; };
@@ -465,6 +468,9 @@
 		5F791E4A2F1C65E100B6419C /* ApplicationDiscriminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationDiscriminator.swift; sourceTree = "<group>"; };
 		5F7B6AFB2F3BAB98003E25E8 /* StatusIconsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusIconsView.swift; sourceTree = "<group>"; };
 		5F906A332F16A18000B99924 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
+		FD1500000000000000000001 /* DisplaySelectionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplaySelectionResolver.swift; sourceTree = "<group>"; };
+		FD1500000000000000000101 /* DisplaySelectionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplaySelectionResolverTests.swift; sourceTree = "<group>"; };
+		FD1500000000000000000201 /* DisplaySelectionResolverSpecs.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DisplaySelectionResolverSpecs.md; sourceTree = "<group>"; };
 		5FA001000000000000000019 /* LoginItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItem.swift; sourceTree = "<group>"; };
 		5FA001000000000000000020 /* ShortcutConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutConfiguration.swift; sourceTree = "<group>"; };
 		5FA1E0B12F50000100A1A1A1 /* PreferencesEvents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesEvents.swift; sourceTree = "<group>"; };
@@ -932,6 +938,9 @@
 				5F17452D2F1A907800128EF8 /* WindowDiscriminator.swift */,
 				5F791E4A2F1C65E100B6419C /* ApplicationDiscriminator.swift */,
 				5F906A332F16A18000B99924 /* Screens.swift */,
+				FD1500000000000000000001 /* DisplaySelectionResolver.swift */,
+				FD1500000000000000000101 /* DisplaySelectionResolverTests.swift */,
+				FD1500000000000000000201 /* DisplaySelectionResolverSpecs.md */,
 				D04BA7CF9C2D1BEC7C05AB24 /* Spaces.swift */,
 				5E1EC110000000000000C001 /* SelectionResolver.swift */,
 				5E5EA12C0000000000000001 /* SearchModeResolver.swift */,
@@ -1869,6 +1878,8 @@
 				5F5849B100000000000000C2 /* WindowEventReducerMinimizeTests.swift in Sources */,
 				5E5EA12E0000000000000003 /* KeyRepeatTimerTestable.swift in Sources */,
 				5E5EA12E0000000000000102 /* KeyRepeatTimerTests.swift in Sources */,
+				FD1500000000000000000003 /* DisplaySelectionResolver.swift in Sources */,
+				FD1500000000000000000102 /* DisplaySelectionResolverTests.swift in Sources */,
 				5F117E40000000000000F003 /* WindowFilterResolver.swift in Sources */,
 				5F117E40000000000000F102 /* WindowFilterResolverTests.swift in Sources */,
 				5F117E41000000000000F003 /* PhantomWindowDetector.swift in Sources */,
@@ -2007,6 +2018,7 @@
 				D04BAAAF5CFA991D3B078DB8 /* KeyboardEvents.swift in Sources */,
 				D04BA1766FBCB2E941D081A5 /* RunningApplicationsEvents.swift in Sources */,
 				5F906A342F16A18500B99924 /* Screens.swift in Sources */,
+				FD1500000000000000000002 /* DisplaySelectionResolver.swift in Sources */,
 				D04BA0AE9865276FF8EF5DEB /* UserDefaultsEvents.swift in Sources */,
 				D04BB101A1B2C3D4E5F60011 /* InputSourceEvents.swift in Sources */,
 				5FA1E0B22F50000100A1A1A1 /* PreferencesEvents.swift in Sources */,
