@@ -75,3 +75,19 @@ and flips the knobs it exercises.
   exemption must beat the strong signal.
 - **testMinimizedMissingFromAllListsIsNotPhantom** — minimized and missing from both CGS lists → not a
   phantom (same exemption: a legitimate window CGS dropped from its per-Space lists).
+
+### C. The focused window is never a weak-signal phantom (#5849)
+
+`isFocused` means the window is at the front of the MRU AND its app is frontmost, i.e. the window the user
+is looking at right now. Electron apps reopened from the Dock (Slack, Telegram) keep their window tagged
+invisible by CGS for seconds after it is on screen and focused, so the weak signal flagged the FOREGROUND
+window a phantom. Two things then went wrong at once: the app looked windowless, so a placeholder tile was
+spawned, and the hidden window still held its MRU slot, so the switcher's "previously-focused window"
+default counted one visible window too far and landed on the wrong app.
+
+- **testFocusedWindowIsNotWeakSignalPhantom** — the weak-signal inputs plus `isFocused` → not a phantom.
+- **testUnfocusedWeakSignalStaysPhantom** — the same inputs unfocused → still a phantom (the exemption must
+  not widen the weak signal for alpha=0 Outlook reminders and friends).
+- **testFocusedButMissingFromAllListsStaysPhantom** — focused but absent from *both* CGS lists → still a
+  phantom. The exemption is weak-signal only, placed after the strong signal: a wid CGS dropped everywhere
+  is gone whatever a stale focus record says, and clearing it would undo #5714.

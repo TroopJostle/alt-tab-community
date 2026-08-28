@@ -1,3 +1,40 @@
+# [11.5.0](https://github.com/lwouis/alt-tab-macos/compare/v11.4.4...v11.5.0) (2026-08-19)
+
+
+### Bug Fixes
+
+* a window might be missing from the list (closes [#5954](https://github.com/lwouis/alt-tab-macos/issues/5954)) ([d070719](https://github.com/lwouis/alt-tab-macos/commit/d070719))
+* block trackpad gesture trigger after an off-axis gesture ([d348b79](https://github.com/lwouis/alt-tab-macos/commit/d348b79))
+* middle-click on the switcher might mess with other apps ([d26bd38](https://github.com/lwouis/alt-tab-macos/commit/d26bd38)), closes [#5950](https://github.com/lwouis/alt-tab-macos/issues/5950)
+* rare crash at launch when preferences are read before registered ([71734c8](https://github.com/lwouis/alt-tab-macos/commit/71734c8))
+* rare crash when a gesture session ends while fingers are still down ([f5802ad](https://github.com/lwouis/alt-tab-macos/commit/f5802ad))
+* rare crash when activating a license before the ui exists ([6bbe6c4](https://github.com/lwouis/alt-tab-macos/commit/6bbe6c4))
+* trackpad gesture could stop working until relaunch (closes [#5137](https://github.com/lwouis/alt-tab-macos/issues/5137)) ([8ffe344](https://github.com/lwouis/alt-tab-macos/commit/8ffe344))
+* window order might be wrong in some cases (closes [#5936](https://github.com/lwouis/alt-tab-macos/issues/5936)) ([cd32ffd](https://github.com/lwouis/alt-tab-macos/commit/cd32ffd)), closes [#5439](https://github.com/lwouis/alt-tab-macos/issues/5439)
+* wrong window selected with 'non-active apps' (closes [#5941](https://github.com/lwouis/alt-tab-macos/issues/5941)) ([47a206d](https://github.com/lwouis/alt-tab-macos/commit/47a206d))
+
+
+### Features
+
+* app size reduced by half - minimum macos is now 10.14.4 ([b6fdf2c](https://github.com/lwouis/alt-tab-macos/commit/b6fdf2c))
+* refine menubar icons to be pixel-perfect ([20451e0](https://github.com/lwouis/alt-tab-macos/commit/20451e0))
+
+## [11.4.4](https://github.com/lwouis/alt-tab-macos/compare/v11.4.3...v11.4.4) (2026-08-06)
+
+
+### Bug Fixes
+
+* dock and menu bar lag while gestures are enabled (closes [#5911](https://github.com/lwouis/alt-tab-macos/issues/5911)) ([1a85669](https://github.com/lwouis/alt-tab-macos/commit/1a85669))
+* exceptions may fail to ignore shortcuts (closes [#5842](https://github.com/lwouis/alt-tab-macos/issues/5842)) ([e2db26d](https://github.com/lwouis/alt-tab-macos/commit/e2db26d))
+* focusing a window might make it expand (closes [#5900](https://github.com/lwouis/alt-tab-macos/issues/5900)) ([ec30bb1](https://github.com/lwouis/alt-tab-macos/commit/ec30bb1))
+* improve tabs and phantom windows detection ([c14960b](https://github.com/lwouis/alt-tab-macos/commit/c14960b)), closes [#5830](https://github.com/lwouis/alt-tab-macos/issues/5830) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5346](https://github.com/lwouis/alt-tab-macos/issues/5346) [#5665](https://github.com/lwouis/alt-tab-macos/issues/5665) [#5875](https://github.com/lwouis/alt-tab-macos/issues/5875) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5714](https://github.com/lwouis/alt-tab-macos/issues/5714) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5714](https://github.com/lwouis/alt-tab-macos/issues/5714) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#39504](https://github.com/lwouis/alt-tab-macos/issues/39504) [#39504](https://github.com/lwouis/alt-tab-macos/issues/39504) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5346](https://github.com/lwouis/alt-tab-macos/issues/5346) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5596](https://github.com/lwouis/alt-tab-macos/issues/5596) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5596](https://github.com/lwouis/alt-tab-macos/issues/5596) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5596](https://github.com/lwouis/alt-tab-macos/issues/5596) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5849](https://github.com/lwouis/alt-tab-macos/issues/5849) [#5439](https://github.com/lwouis/alt-tab-macos/issues/5439) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5665](https://github.com/lwouis/alt-tab-macos/issues/5665) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5785](https://github.com/lwouis/alt-tab-macos/issues/5785) [#5875](https://github.com/lwouis/alt-tab-macos/issues/5875) [#5875](https://github.com/lwouis/alt-tab-macos/issues/5875)
+* make preview lazy to relieve pressure on the os ([#5861](https://github.com/lwouis/alt-tab-macos/issues/5861)) ([499006c](https://github.com/lwouis/alt-tab-macos/commit/499006c)), closes [#5786](https://github.com/lwouis/alt-tab-macos/issues/5786)
+* mitigate issues with official screenshot api (closes [#5786](https://github.com/lwouis/alt-tab-macos/issues/5786)) ([893673c](https://github.com/lwouis/alt-tab-macos/commit/893673c))
+* mouse hover can no longer scrolls the switcher (closes [#5484](https://github.com/lwouis/alt-tab-macos/issues/5484)) ([a2d0527](https://github.com/lwouis/alt-tab-macos/commit/a2d0527))
+* rare crash when opening the customize style sheet ([726c5fd](https://github.com/lwouis/alt-tab-macos/commit/726c5fd))
+* shortcut conflicts were not properly remembered (closes [#5897](https://github.com/lwouis/alt-tab-macos/issues/5897)) ([1014601](https://github.com/lwouis/alt-tab-macos/commit/1014601))
+* switcher might show previous space briefly (closes [#5864](https://github.com/lwouis/alt-tab-macos/issues/5864)) ([767b96f](https://github.com/lwouis/alt-tab-macos/commit/767b96f))
+
 ## [11.4.3](https://github.com/lwouis/alt-tab-macos/compare/v11.4.2...v11.4.3) (2026-07-09)
 
 

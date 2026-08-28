@@ -13,6 +13,9 @@ Drops the following without affecting how AppKit renders the PDF:
   Image XObject /ColorSpace, and Pattern /Shading /ColorSpace dicts. This
   matters most for Figma's color icons (8+ patterns each referencing the same
   ICC profile object).
+- Duplicate gradient functions: Figma emits a fresh /FunctionType stream per
+  pattern even when several patterns share the same ramp. Identical ones are
+  collapsed onto a single object.
 
 Usage:
     python3 scripts/assets/optimize_figma_pdf.py path1.pdf path2.pdf ...
@@ -51,6 +54,62 @@ def swap_icc_in_cs_dict(cs_dict):
                 cs_dict[key] = Name('/DeviceGray' if n == 1 else ('/DeviceRGB' if n == 3 else '/DeviceCMYK'))
         except Exception:
             pass
+
+
+def dedupe_functions(pdf):
+    """Collapse byte-identical /Function streams onto one object.
+
+    Figma writes a separate PostScript calculator stream for every gradient, even when
+    several gradients share the same ramp. On menubar-2 that was the same function five
+    times over, ~1 KB in a 3.5 KB file. Repointing is enough; the orphans disappear in
+    remove_unreferenced_resources(). Keyed on the decoded program plus the dict fields
+    that change how it's evaluated, so functions that merely look alike aren't merged.
+    """
+    canon = {}
+    for obj in pdf.objects:
+        try:
+            if not isinstance(obj, pikepdf.Stream) or Name('/FunctionType') not in obj:
+                continue
+            key = (str(obj.get(Name('/FunctionType'))), str(obj.get(Name('/Domain'))),
+                   str(obj.get(Name('/Range'))), bytes(obj.read_bytes()))
+            canon.setdefault(key, obj)
+        except Exception:
+            pass
+    if not canon:
+        return
+
+    # /Function lives on Shading dicts nested under page Resources → Pattern, which are
+    # often direct (non-indirect) objects. Those all report objgen (0,0), so only memoize
+    # indirect ones or the first direct dict would shadow every sibling.
+    seen = set()
+
+    def visit(node):
+        objgen = node.objgen
+        if objgen != (0, 0):
+            if objgen in seen:
+                return
+            seen.add(objgen)
+        try:
+            items = [(k, node[k]) for k in node.keys()] if isinstance(node, pikepdf.Dictionary) \
+                else [(None, v) for v in node]
+        except Exception:
+            return
+        for key, val in items:
+            try:
+                if key == '/Function' and isinstance(val, pikepdf.Stream) and Name('/FunctionType') in val:
+                    k = (str(val.get(Name('/FunctionType'))), str(val.get(Name('/Domain'))),
+                         str(val.get(Name('/Range'))), bytes(val.read_bytes()))
+                    target = canon.get(k)
+                    if target is not None and val.objgen != target.objgen:
+                        node[key] = target
+                    continue
+                if isinstance(val, (pikepdf.Dictionary, pikepdf.Array)):
+                    visit(val)
+            except Exception:
+                pass
+
+    for page in pdf.pages:
+        visit(page.obj)
 
 
 def optimize(path):
@@ -137,6 +196,7 @@ def optimize(path):
         except Exception:
             pass
 
+    dedupe_functions(pdf)
     pdf.remove_unreferenced_resources()
     pdf.save(path,
              compress_streams=True,

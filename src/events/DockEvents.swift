@@ -30,6 +30,17 @@ class DockEvents {
 
     private static let handleEvent: AXObserverCallback = { _, _, notificationName, _ in
         Logger.debug { notificationName }
-        MissionControl.setState(MissionControlState(rawValue: notificationName as String)!)
+        let state = MissionControlState(rawValue: notificationName as String)!
+        MissionControl.setState(state)
+        // Opening Mission Control / Exposé / Show Desktop re-shows the whole desktop 12-106ms later, as
+        // order-ins with no order-out in front of them — indistinguishable from a Cmd+` raise per window, so
+        // the active app's windows would all re-front (#5936). Stamped and dispatched from THIS thread's
+        // arrival (the observer runs on `missionControlThread`) so the mute is armed by the time the burst's
+        // own main-queue blocks run. Exiting is deliberately NOT armed: no capture has ever shown a burst on
+        // the way out, and the mute for this source is short precisely so that cycling windows right after
+        // dismissing Mission Control still moves the MRU.
+        guard state != .inactive else { return }
+        let now = ProcessInfo.processInfo.systemUptime
+        DispatchQueue.main.async { TrackedWindowStateBridge.dispatch(.systemReshow(now: now, source: .missionControl)) }
     }
 }

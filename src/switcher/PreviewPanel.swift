@@ -60,6 +60,15 @@ class PreviewPanel: NSPanel {
         }
     }
 
+    /// Order out AND release the displayed frame: the layer would otherwise pin a full-resolution
+    /// frame in this static view for the rest of the app's lifetime, defeating the session-scoped
+    /// Preview-frame cache's release-on-hide (#5861).
+    static func hide() {
+        Self.shared.orderOut(nil)
+        previewView.releaseImage()
+        currentId = nil
+    }
+
     /// Called when a window is removed from `Windows.list`: if our preview was showing that
     /// window, drop the cached IOSurface in `previewView.contents` so it can deallocate.
     /// Without this, closing the previewed window in the background leaves its full-resolution

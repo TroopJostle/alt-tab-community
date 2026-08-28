@@ -92,6 +92,24 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
     }
 
+    // alt-down > tab-down > tab-up > (alt-up never lands) > tab-down
+    // The first pair's release is lost, so its session is still open when the second pair's tab-down
+    // arrives. That release must be honoured on the tile the user was looking at, BEFORE the tab-down
+    // cycles: honoured after, the focus commits one tile too far, and the alt-tabs after it ping-pong
+    // against a window that was never picked (QA F-01).
+    func testLostHoldReleaseIsSettledBeforeTheNextSummonCycles() throws {
+        resetState()
+        ModifierFlags.current = [.option]
+        handleKeyboardEvent(nil, nil, nil, [.option], false)
+        handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
+        handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        ModifierFlags.current = []
+        handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered,
+                       ["nextWindowShortcut", "holdShortcut", "nextWindowShortcut", "holdShortcut"])
+    }
+
     // alt-down > tab-down > tab-up > w-down > w-up > alt-up
     func testCloseWindowShortcut() throws {
         resetState()

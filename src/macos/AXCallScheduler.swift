@@ -144,7 +144,7 @@ class AXCallScheduler {
         }
 
         if RetryPolicy.shouldGiveUp(elapsedSinceStartNs: DispatchTime.now().uptimeNanoseconds - retryStartTime) {
-            Logger.info { "AX call timed out after \(RetryPolicy.giveUpAfterNs / 1_000_000_000)s. \(Self.logContext(file, function, line, context))" }
+            Logger.warning { "AX call timed out after \(RetryPolicy.giveUpAfterNs / 1_000_000_000)s. \(Self.logContext(file, function, line, context))" }
             if let pid {
                 lock.lock()
                 unresponsivePids.remove(pid)

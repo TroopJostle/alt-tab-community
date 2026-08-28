@@ -8,6 +8,11 @@ class ScreensEvents {
     }
 
     @objc private static func handleEvent(_ notification: Notification) {
+        // Adding, removing or resizing a screen re-shows every window ~500ms later, as order-ins with no
+        // order-out in front of them, which the raise rule would read as the user fronting each one (#5936).
+        // Armed OUTSIDE the throttler: the throttle exists to collapse the grouped notifications into one
+        // expensive refresh, while this is one assignment that must not be delayed or dropped.
+        TrackedWindowStateBridge.dispatch(.systemReshow(now: ProcessInfo.processInfo.systemUptime, source: .screens))
         // screen notifications often arrive in groups (e.g. 2 in a row in a short time)
         screenChangeThrottler.throttleOrProceed {
             Logger.debug { notification.name.rawValue }

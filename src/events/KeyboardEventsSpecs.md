@@ -33,6 +33,7 @@ Mirrors `KeyboardEventsTests.swift` 1:1.
 - **testSequenceWithMissingEventAndWeCanSaveTheDay** — a dropped event the machine can recover from.
 - **testSequenceWithMissingEventAndWeCanNotSaveTheDay** — a dropped event it can't recover from → predictable degradation.
 - **testOutOfOrderEvents** — events arriving out of order are handled.
+- **testLostHoldReleaseIsSettledBeforeTheNextSummonCycles** — a lost modifier-up is honoured on the tile the user saw, before the next summon's key-down cycles the selection.
 - **testCloseWindowShortcut** — the close-window shortcut acts on the selection mid-session.
 - **testOnReleaseDoNothing** — `doNothingOnRelease` style: releasing the modifier doesn't focus.
 - **testOnReleaseToggleSearchModeDoesNotFocus** — search-on-release: releasing enters search, doesn't focus the window.

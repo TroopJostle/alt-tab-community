@@ -52,6 +52,16 @@ class KeyboardEvents {
             }
             return nil
         case .tapDisabledByUserInput, .tapDisabledByTimeout:
+            // Logged at INFO, and naming WHICH cause, because a dead keyboard tap is invisible from the
+            // outside: the symptom is "Esc does nothing and the switcher is stuck", and nothing in the
+            // log said a tap had died. `byTimeout` means our own callback was too slow — the main thread
+            // was busy — and it is the one worth chasing; `byUserInput` is macOS being defensive.
+            //
+            // Both taps share this callback, so say whether the Esc tap was even wanted on. Without
+            // that, the expected case reads alarming: `byUserInput` fires once per summon, as the tap we
+            // just disabled ourselves at session end goes away, and 266 such lines in one session look
+            // like macOS fighting us when nothing is being re-enabled at all.
+            Logger.info { "\(type == .tapDisabledByTimeout ? "byTimeout" : "byUserInput") wantEscapeTap:\(anyShortcutUsesEscape && SwitcherSession.isActive)" }
             reEnableTapIfNeeded()
             return Unmanaged.passUnretained(cgEvent)
         default:
@@ -85,8 +95,10 @@ class KeyboardEvents {
     static func reEnableTapIfNeeded() {
         if let eventTap, !CGEvent.tapIsEnabled(tap: eventTap) {
             CGEvent.tapEnable(tap: eventTap, enable: true)
-            Logger.warning { "" }
+            Logger.warning { "flags tap was disabled; re-enabled" }
         }
+        // `updateEscapeAbsorptionTap` covers the Esc tap: it compares `tapIsEnabled` against what it
+        // wants, so a tap macOS disabled while the switcher is open is re-enabled by that comparison.
         updateEscapeAbsorptionTap()
     }
 
@@ -99,6 +111,9 @@ class KeyboardEvents {
         let shouldEnable = anyShortcutUsesEscape && SwitcherSession.isActive
         if CGEvent.tapIsEnabled(tap: escapeEventTap) != shouldEnable {
             CGEvent.tapEnable(tap: escapeEventTap, enable: shouldEnable)
+            // Whether Esc can be heard while the switcher is up is the difference between "press Esc" and
+            // "no way out", and it was not visible anywhere. Cheap: this fires twice per summon.
+            Logger.debug { "escape tap enabled:\(shouldEnable) usesEscape:\(anyShortcutUsesEscape) sessionActive:\(SwitcherSession.isActive)" }
         }
     }
 

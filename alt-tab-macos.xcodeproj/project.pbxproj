@@ -39,6 +39,9 @@
 		5E1EC110000000000000C002 /* SelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1EC110000000000000C001 /* SelectionResolver.swift */; };
 		5E1EC110000000000000C003 /* SelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1EC110000000000000C001 /* SelectionResolver.swift */; };
 		5E1EC110000000000000C102 /* SelectionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1EC110000000000000C101 /* SelectionResolverTests.swift */; };
+		5E9E570000000000000F1002 /* GestureTriggerKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9E570000000000000F1001 /* GestureTriggerKernel.swift */; };
+		5E9E570000000000000F1003 /* GestureTriggerKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9E570000000000000F1001 /* GestureTriggerKernel.swift */; };
+		5E9E570000000000000F1102 /* GestureTriggerKernelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9E570000000000000F1101 /* GestureTriggerKernelTests.swift */; };
 		5EA8E110000000000000F002 /* AxQueryRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA8E110000000000000F001 /* AxQueryRouting.swift */; };
 		5EA8E110000000000000F003 /* AxQueryRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA8E110000000000000F001 /* AxQueryRouting.swift */; };
 		5EA8E110000000000000F102 /* AxQueryRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA8E110000000000000F101 /* AxQueryRoutingTests.swift */; };
@@ -67,6 +70,16 @@
 		5E5EA12D0000000000000002 /* ShortcutModifierResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12D0000000000000001 /* ShortcutModifierResolver.swift */; };
 		5E5EA12D0000000000000003 /* ShortcutModifierResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12D0000000000000001 /* ShortcutModifierResolver.swift */; };
 		5E5EA12D0000000000000102 /* ShortcutModifierResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12D0000000000000101 /* ShortcutModifierResolverTests.swift */; };
+		5F5849A900000000000000A2 /* BruteForceWindowMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5849A900000000000000A1 /* BruteForceWindowMatch.swift */; };
+		5F5849A900000000000000A3 /* BruteForceWindowMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5849A900000000000000A1 /* BruteForceWindowMatch.swift */; };
+		5F5849A900000000000000B2 /* BruteForceWindowMatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5849A900000000000000B1 /* BruteForceWindowMatchTests.swift */; };
+		5F5849B000000000000000B2 /* WindowEventReducerPhantomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5849B000000000000000B1 /* WindowEventReducerPhantomTests.swift */; };
+		5F5849B000000000000000C2 /* WindowEventReducerSpaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5849B000000000000000C1 /* WindowEventReducerSpaceTests.swift */; };
+		5F5849B100000000000000B2 /* WindowEventReducerFocusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5849B100000000000000B1 /* WindowEventReducerFocusTests.swift */; };
+		5F5849B100000000000000C2 /* WindowEventReducerMinimizeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5849B100000000000000C1 /* WindowEventReducerMinimizeTests.swift */; };
+		5E5EA12E0000000000000002 /* KeyRepeatTimerTestable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12E0000000000000001 /* KeyRepeatTimerTestable.swift */; };
+		5E5EA12E0000000000000003 /* KeyRepeatTimerTestable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12E0000000000000001 /* KeyRepeatTimerTestable.swift */; };
+		5E5EA12E0000000000000102 /* KeyRepeatTimerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12E0000000000000101 /* KeyRepeatTimerTests.swift */; };
 		5F117E40000000000000F002 /* WindowFilterResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F117E40000000000000F001 /* WindowFilterResolver.swift */; };
 		5F117E40000000000000F003 /* WindowFilterResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F117E40000000000000F001 /* WindowFilterResolver.swift */; };
 		5F117E40000000000000F102 /* WindowFilterResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F117E40000000000000F101 /* WindowFilterResolverTests.swift */; };
@@ -89,6 +102,18 @@
 		5EC0DE00000000000000A102 /* RealWorldScenariosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC0DE00000000000000A101 /* RealWorldScenariosTests.swift */; };
 		5E2A571E000000000000A002 /* WindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2A571E000000000000A001 /* WindowState.swift */; };
 		5E2A571E000000000000A003 /* WindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2A571E000000000000A001 /* WindowState.swift */; };
+		5EAA25AA000000000000A002 /* TrackedWindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25AA000000000000A001 /* TrackedWindowState.swift */; };
+		5EAA25AA000000000000A003 /* TrackedWindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25AA000000000000A001 /* TrackedWindowState.swift */; };
+		5EAA25AB000000000000A002 /* WindowEventReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25AB000000000000A001 /* WindowEventReducer.swift */; };
+		5EAA25AB000000000000A003 /* WindowEventReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25AB000000000000A001 /* WindowEventReducer.swift */; };
+		5EAA25AC000000000000A002 /* TrackedWindowStateBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25AC000000000000A001 /* TrackedWindowStateBridge.swift */; };
+		5EAA25AD000000000000A003 /* TestReducerRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25AD000000000000A001 /* TestReducerRunner.swift */; };
+		5EAA25AE000000000000A003 /* TestReducerRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25AE000000000000A001 /* TestReducerRunnerTests.swift */; };
+		5EAA25FF000000000000A003 /* TrackedWindowStateFieldsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25FF000000000000A001 /* TrackedWindowStateFieldsTests.swift */; };
+		5EAA25B0000000000000A003 /* TestScenarioSimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25B0000000000000A001 /* TestScenarioSimulator.swift */; };
+		5EAA25C0000000000000A003 /* TestScenarioGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25C0000000000000A001 /* TestScenarioGenerator.swift */; };
+		5EAA25B2000000000000A003 /* TestInteractionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25B2000000000000A001 /* TestInteractionModel.swift */; };
+		5EAA25B1000000000000A003 /* TestScenarioSimulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAA25B1000000000000A001 /* TestScenarioSimulatorTests.swift */; };
 		5FC5980000000000000C0002 /* CGSSymbolicHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC5980000000000000C0001 /* CGSSymbolicHotKey.swift */; };
 		5FC5980000000000000C0003 /* CGSSymbolicHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC5980000000000000C0001 /* CGSSymbolicHotKey.swift */; };
 		5FC5980000000000000A0002 /* NativeHotkeyResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC5980000000000000A0001 /* NativeHotkeyResolver.swift */; };
@@ -368,6 +393,8 @@
 		5883F0A729A5182C0071DB65 /* TrackpadEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadEvents.swift; sourceTree = "<group>"; };
 		5E1EC110000000000000C001 /* SelectionResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectionResolver.swift; sourceTree = "<group>"; };
 		5E1EC110000000000000C101 /* SelectionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionResolverTests.swift; sourceTree = "<group>"; };
+		5E9E570000000000000F1001 /* GestureTriggerKernel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GestureTriggerKernel.swift; sourceTree = "<group>"; };
+		5E9E570000000000000F1101 /* GestureTriggerKernelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GestureTriggerKernelTests.swift; sourceTree = "<group>"; };
 		5EA8E110000000000000F001 /* AxQueryRouting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AxQueryRouting.swift; sourceTree = "<group>"; };
 		5EA8E110000000000000F101 /* AxQueryRoutingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AxQueryRoutingTests.swift; sourceTree = "<group>"; };
 		5C5A1100000000000000A001 /* WsEventRouting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WsEventRouting.swift; sourceTree = "<group>"; };
@@ -387,6 +414,14 @@
 		5E5EA12C0000000000000101 /* SearchModeResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchModeResolverTests.swift; sourceTree = "<group>"; };
 		5E5EA12D0000000000000001 /* ShortcutModifierResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutModifierResolver.swift; sourceTree = "<group>"; };
 		5E5EA12D0000000000000101 /* ShortcutModifierResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutModifierResolverTests.swift; sourceTree = "<group>"; };
+		5F5849A900000000000000A1 /* BruteForceWindowMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BruteForceWindowMatch.swift; sourceTree = "<group>"; };
+		5F5849A900000000000000B1 /* BruteForceWindowMatchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BruteForceWindowMatchTests.swift; sourceTree = "<group>"; };
+		5F5849B000000000000000B1 /* WindowEventReducerPhantomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowEventReducerPhantomTests.swift; sourceTree = "<group>"; };
+		5F5849B000000000000000C1 /* WindowEventReducerSpaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowEventReducerSpaceTests.swift; sourceTree = "<group>"; };
+		5F5849B100000000000000B1 /* WindowEventReducerFocusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowEventReducerFocusTests.swift; sourceTree = "<group>"; };
+		5F5849B100000000000000C1 /* WindowEventReducerMinimizeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowEventReducerMinimizeTests.swift; sourceTree = "<group>"; };
+		5E5EA12E0000000000000001 /* KeyRepeatTimerTestable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRepeatTimerTestable.swift; sourceTree = "<group>"; };
+		5E5EA12E0000000000000101 /* KeyRepeatTimerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRepeatTimerTests.swift; sourceTree = "<group>"; };
 		5F117E40000000000000F001 /* WindowFilterResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowFilterResolver.swift; sourceTree = "<group>"; };
 		5F117E40000000000000F101 /* WindowFilterResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowFilterResolverTests.swift; sourceTree = "<group>"; };
 		5F117E41000000000000F001 /* PhantomWindowDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhantomWindowDetector.swift; sourceTree = "<group>"; };
@@ -403,6 +438,16 @@
 		5EC0DE00000000000000A101 /* RealWorldScenariosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealWorldScenariosTests.swift; sourceTree = "<group>"; };
 		5E2A571E000000000000A001 /* WindowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowState.swift; sourceTree = "<group>"; };
 		5E2A571E000000000000A201 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationState.swift; sourceTree = "<group>"; };
+		5EAA25AA000000000000A001 /* TrackedWindowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedWindowState.swift; sourceTree = "<group>"; };
+		5EAA25AB000000000000A001 /* WindowEventReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowEventReducer.swift; sourceTree = "<group>"; };
+		5EAA25AC000000000000A001 /* TrackedWindowStateBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedWindowStateBridge.swift; sourceTree = "<group>"; };
+		5EAA25AD000000000000A001 /* TestReducerRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestReducerRunner.swift; sourceTree = "<group>"; };
+		5EAA25AE000000000000A001 /* TestReducerRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestReducerRunnerTests.swift; sourceTree = "<group>"; };
+		5EAA25FF000000000000A001 /* TrackedWindowStateFieldsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedWindowStateFieldsTests.swift; sourceTree = "<group>"; };
+		5EAA25B0000000000000A001 /* TestScenarioSimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScenarioSimulator.swift; sourceTree = "<group>"; };
+		5EAA25C0000000000000A001 /* TestScenarioGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScenarioGenerator.swift; sourceTree = "<group>"; };
+		5EAA25B2000000000000A001 /* TestInteractionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestInteractionModel.swift; sourceTree = "<group>"; };
+		5EAA25B1000000000000A001 /* TestScenarioSimulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScenarioSimulatorTests.swift; sourceTree = "<group>"; };
 		D04BAE2200000000ED004T12 /* SettingsSearchHighlightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSearchHighlightTests.swift; sourceTree = "<group>"; };
 		D04BAE2200000000ED005T12 /* SettingsSectionSearchContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionSearchContentTests.swift; sourceTree = "<group>"; };
 		5F04852D2F09AC9700235D4A /* WindowCaptureEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCaptureEvents.swift; sourceTree = "<group>"; };
@@ -782,6 +827,8 @@
 				BF0C8643F524515224BF1618 /* KeyboardEventsTestable.swift */,
 				BF0C899905524253DC170B56 /* KeyboardEventsTests.swift */,
 				5883F0A729A5182C0071DB65 /* TrackpadEvents.swift */,
+				5E9E570000000000000F1001 /* GestureTriggerKernel.swift */,
+				5E9E570000000000000F1101 /* GestureTriggerKernelTests.swift */,
 				BF0C8FAF34022E23582797F3 /* ScrollwheelEvents.swift */,
 				BF0C81DD40D5AAD9B7C09028 /* CursorEvents.swift */,
 				BF0C8C69316EAAF6DC9AE391 /* CliEvents.swift */,
@@ -871,6 +918,16 @@
 				D04BA10777505D8A67ABD186 /* Application.swift */,
 				5E2A571E000000000000A001 /* WindowState.swift */,
 				5E2A571E000000000000A201 /* ApplicationState.swift */,
+				5EAA25AA000000000000A001 /* TrackedWindowState.swift */,
+				5EAA25AB000000000000A001 /* WindowEventReducer.swift */,
+				5EAA25AC000000000000A001 /* TrackedWindowStateBridge.swift */,
+				5EAA25AD000000000000A001 /* TestReducerRunner.swift */,
+				5EAA25AE000000000000A001 /* TestReducerRunnerTests.swift */,
+				5EAA25FF000000000000A001 /* TrackedWindowStateFieldsTests.swift */,
+				5EAA25B0000000000000A001 /* TestScenarioSimulator.swift */,
+				5EAA25C0000000000000A001 /* TestScenarioGenerator.swift */,
+				5EAA25B2000000000000A001 /* TestInteractionModel.swift */,
+				5EAA25B1000000000000A001 /* TestScenarioSimulatorTests.swift */,
 				BB0000000000000000000001 /* TabGroup.swift */,
 				5F17452D2F1A907800128EF8 /* WindowDiscriminator.swift */,
 				5F791E4A2F1C65E100B6419C /* ApplicationDiscriminator.swift */,
@@ -888,6 +945,12 @@
 				5EC0DE00000000000000A101 /* RealWorldScenariosTests.swift */,
 				5E5EA12C0000000000000101 /* SearchModeResolverTests.swift */,
 				5E5EA12D0000000000000101 /* ShortcutModifierResolverTests.swift */,
+				5F5849A900000000000000A1 /* BruteForceWindowMatch.swift */,
+				5F5849A900000000000000B1 /* BruteForceWindowMatchTests.swift */,
+				5F5849B000000000000000B1 /* WindowEventReducerPhantomTests.swift */,
+				5F5849B000000000000000C1 /* WindowEventReducerSpaceTests.swift */,
+				5F5849B100000000000000B1 /* WindowEventReducerFocusTests.swift */,
+				5F5849B100000000000000C1 /* WindowEventReducerMinimizeTests.swift */,
 				5F117E40000000000000F101 /* WindowFilterResolverTests.swift */,
 				5F117E41000000000000F101 /* PhantomWindowDetectorTests.swift */,
 				5E7C0F70000000000000E101 /* ExceptionMatcherTests.swift */,
@@ -1047,6 +1110,8 @@
 				BF0C84933936C6FE676CD33C /* AppearanceTests.swift */,
 				AA974BA829B7D84C0099A29E /* PreviewPanel.swift */,
 				BF0C8D606B53D315F2D9927B /* KeyRepeatTimer.swift */,
+				5E5EA12E0000000000000001 /* KeyRepeatTimerTestable.swift */,
+				5E5EA12E0000000000000101 /* KeyRepeatTimerTests.swift */,
 				D04BA62E30174C336E4080FA /* main-window */,
 				F00DCAFE0000000000000002 /* Search.swift */,
 				F00DCAFE0000000000000003 /* SearchTestable.swift */,
@@ -1766,6 +1831,8 @@
 				5F882F382EC3C63400110A9F /* CustomRecorderControlTestable.swift in Sources */,
 				BF0C81FA62D810342F59291A /* AppearanceTests.swift in Sources */,
 				5EA8E110000000000000F003 /* AxQueryRouting.swift in Sources */,
+				5E9E570000000000000F1002 /* GestureTriggerKernel.swift in Sources */,
+				5E9E570000000000000F1102 /* GestureTriggerKernelTests.swift in Sources */,
 				5EA8E110000000000000F102 /* AxQueryRoutingTests.swift in Sources */,
 				5C5A1100000000000000A003 /* WsEventRouting.swift in Sources */,
 				5C5A1100000000000000A102 /* WsEventRoutingTests.swift in Sources */,
@@ -1794,6 +1861,14 @@
 				5E5EA12C0000000000000102 /* SearchModeResolverTests.swift in Sources */,
 				5E5EA12D0000000000000003 /* ShortcutModifierResolver.swift in Sources */,
 				5E5EA12D0000000000000102 /* ShortcutModifierResolverTests.swift in Sources */,
+				5F5849A900000000000000A3 /* BruteForceWindowMatch.swift in Sources */,
+				5F5849A900000000000000B2 /* BruteForceWindowMatchTests.swift in Sources */,
+				5F5849B000000000000000B2 /* WindowEventReducerPhantomTests.swift in Sources */,
+				5F5849B000000000000000C2 /* WindowEventReducerSpaceTests.swift in Sources */,
+				5F5849B100000000000000B2 /* WindowEventReducerFocusTests.swift in Sources */,
+				5F5849B100000000000000C2 /* WindowEventReducerMinimizeTests.swift in Sources */,
+				5E5EA12E0000000000000003 /* KeyRepeatTimerTestable.swift in Sources */,
+				5E5EA12E0000000000000102 /* KeyRepeatTimerTests.swift in Sources */,
 				5F117E40000000000000F003 /* WindowFilterResolver.swift in Sources */,
 				5F117E40000000000000F102 /* WindowFilterResolverTests.swift in Sources */,
 				5F117E41000000000000F003 /* PhantomWindowDetector.swift in Sources */,
@@ -1811,6 +1886,15 @@
 				5EC0DE00000000000000A102 /* RealWorldScenariosTests.swift in Sources */,
 				5E2A571E000000000000A003 /* WindowState.swift in Sources */,
 				5E2A571E000000000000A203 /* ApplicationState.swift in Sources */,
+				5EAA25AA000000000000A003 /* TrackedWindowState.swift in Sources */,
+				5EAA25AB000000000000A003 /* WindowEventReducer.swift in Sources */,
+				5EAA25AD000000000000A003 /* TestReducerRunner.swift in Sources */,
+				5EAA25AE000000000000A003 /* TestReducerRunnerTests.swift in Sources */,
+				5EAA25FF000000000000A003 /* TrackedWindowStateFieldsTests.swift in Sources */,
+				5EAA25B0000000000000A003 /* TestScenarioSimulator.swift in Sources */,
+				5EAA25C0000000000000A003 /* TestScenarioGenerator.swift in Sources */,
+				5EAA25B2000000000000A003 /* TestInteractionModel.swift in Sources */,
+				5EAA25B1000000000000A003 /* TestScenarioSimulatorTests.swift in Sources */,
 				5FC5980000000000000C0003 /* CGSSymbolicHotKey.swift in Sources */,
 				D04BAE2200000000ED004T11 /* SettingsSearchHighlightTests.swift in Sources */,
 				D04BAE2200000000ED005T11 /* SettingsSectionSearchContentTests.swift in Sources */,
@@ -1850,6 +1934,8 @@
 				5E1EC110000000000000C002 /* SelectionResolver.swift in Sources */,
 				5E5EA12C0000000000000002 /* SearchModeResolver.swift in Sources */,
 				5E5EA12D0000000000000002 /* ShortcutModifierResolver.swift in Sources */,
+				5F5849A900000000000000A2 /* BruteForceWindowMatch.swift in Sources */,
+				5E5EA12E0000000000000002 /* KeyRepeatTimerTestable.swift in Sources */,
 				5F117E40000000000000F002 /* WindowFilterResolver.swift in Sources */,
 				5F117E41000000000000F002 /* PhantomWindowDetector.swift in Sources */,
 				5F5790DE7EC7000000000A02 /* PreferencesPersistenceProbe.swift in Sources */,
@@ -1859,6 +1945,9 @@
 				5E7AB00000000000000D2002 /* TabGroupResolver.swift in Sources */,
 				5E2A571E000000000000A002 /* WindowState.swift in Sources */,
 				5E2A571E000000000000A202 /* ApplicationState.swift in Sources */,
+				5EAA25AA000000000000A002 /* TrackedWindowState.swift in Sources */,
+				5EAA25AB000000000000A002 /* WindowEventReducer.swift in Sources */,
+				5EAA25AC000000000000A002 /* TrackedWindowStateBridge.swift in Sources */,
 				F00DCAFE0000000000001002 /* Search.swift in Sources */,
 				F00DCAFE0000000000001003 /* SearchTestable.swift in Sources */,
 				D04BAC011A71E0418154F8CD /* Preferences.swift in Sources */,
@@ -1907,6 +1996,7 @@
 				D04BA8757C9F20F25EB50785 /* TextField.swift in Sources */,
 				5F21C9E02C6E94240091F72F /* ShortcutsWhenActiveSheet.swift in Sources */,
 				5EA8E110000000000000F002 /* AxQueryRouting.swift in Sources */,
+				5E9E570000000000000F1003 /* GestureTriggerKernel.swift in Sources */,
 				5C5A1100000000000000A002 /* WsEventRouting.swift in Sources */,
 				5CAF00000000000000000002 /* ActivationFocusResolver.swift in Sources */,
 				5C5A1100000000000000B002 /* WsWindowState.swift in Sources */,

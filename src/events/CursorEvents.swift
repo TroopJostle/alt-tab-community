@@ -128,8 +128,10 @@ class CursorEvents {
         return nil
     }
 
+    /// must stay symmetric with `handleOtherMouseUp`: we always swallow the up (it's our close-window click),
+    /// so letting the down through would leave WindowServer thinking the button is still held
     private static func handleOtherMouseDown(_ cgEvent: CGEvent) -> Unmanaged<CGEvent>? {
-        if ContextMenuEvents.isMenuOpen || isPointerInsideUi() { return Unmanaged.passUnretained(cgEvent) }
+        if ContextMenuEvents.isMenuOpen { return Unmanaged.passUnretained(cgEvent) }
         return nil
     }
 

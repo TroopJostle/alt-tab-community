@@ -856,15 +856,7 @@ class ControlsTab {
             if SettingsWindow.shared == nil || !shouldClearConflictingShortcuts(conflicts.map { $0.value }, NSLocalizedString("Arrow keys already assigned to other actions:\n%@", comment: "")) {
                 return false
             }
-            conflicts.forEach {
-                removeShortcutIfExists($0.key)
-                let existing = shortcutControls[$0.key]
-                if existing != nil {
-                    existing!.0.objectValue = nil
-                    shortcutChangedCallback(existing!.0)
-                    LabelAndControl.controlWasChanged(existing!.0, $0.key)
-                }
-            }
+            conflicts.forEach { unassignShortcut($0.key) }
         }
         return true
     }
@@ -898,15 +890,7 @@ class ControlsTab {
             if SettingsWindow.shared == nil || !shouldClearConflictingShortcuts(conflicts.map { $0.value }, NSLocalizedString("Vim keys already assigned to other actions:\n%@", comment: "")) {
                 return false
             }
-            conflicts.forEach {
-                removeShortcutIfExists($0.key)
-                let existing = shortcutControls[$0.key]
-                if existing != nil {
-                    existing!.0.objectValue = nil
-                    shortcutChangedCallback(existing!.0)
-                    LabelAndControl.controlWasChanged(existing!.0, $0.key)
-                }
-            }
+            conflicts.forEach { unassignShortcut($0.key) }
         }
         return true
     }

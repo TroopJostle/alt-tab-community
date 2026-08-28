@@ -110,6 +110,15 @@ class BackgroundWork {
             threadStartSemaphore.wait()
         }
 
+        /// Run `block` on this thread. State owned by a RunLoop thread (typically mutated from CGEvent tap
+        /// callbacks, which all run here) has no lock around it, so other threads have to hop instead of
+        /// touching it in place.
+        func async(_ block: @escaping () -> Void) {
+            guard let runLoop else { return }
+            CFRunLoopPerformBlock(runLoop, CFRunLoopMode.commonModes.rawValue, block)
+            CFRunLoopWakeUp(runLoop)
+        }
+
         override func main() {
             Logger.debug { "Thread ready" }
             // the RunLoop is lazy; calling this initializes it

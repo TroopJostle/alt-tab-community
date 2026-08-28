@@ -10,10 +10,11 @@ import XCTest
 final class WindowFilterResolverTests: XCTestCase {
 
     private func ws(isPhantom: Bool = false, isWindowlessApp: Bool = false, isFullscreen: Bool = false,
-                    isMinimized: Bool = false, isTabbed: Bool = false, isOnAllSpaces: Bool = false,
-                    spaceIds: [UInt64] = [], title: String = "Title") -> WindowState {
+                    isMinimized: Bool = false, isTabbed: Bool = false, isHeldVisibleForTab: Bool = false,
+                    isOnAllSpaces: Bool = false, spaceIds: [UInt64] = [], title: String = "Title") -> WindowState {
         WindowState(id: "w", isPhantom: isPhantom, isWindowlessApp: isWindowlessApp,
                     isFullscreen: isFullscreen, isMinimized: isMinimized, isTabbed: isTabbed,
+                    isHeldVisibleForTab: isHeldVisibleForTab,
                     isOnAllSpaces: isOnAllSpaces, spaceIds: spaceIds, spaceIndexes: [],
                     lastFocusOrder: 0, creationOrder: 0, title: title)
     }
@@ -139,6 +140,22 @@ final class WindowFilterResolverTests: XCTestCase {
                                                        isOnPreferredScreen: true))
     }
 
+    /// The first-tab vanish (live TABDIAG 2026-07-24): a tab held through the new-tab discovery gap is
+    /// Space-less (its 1326 landed) but just backgrounded on the CURRENT visible Space, so it must still
+    /// show under `.visible` even though nothing puts it in a visible Space.
+    func testOnlyVisibleSpacesShowsSpacelessHeldTab() {
+        XCTAssertTrue(WindowFilterResolver.shouldShow(ws(isHeldVisibleForTab: true, spaceIds: []), appState(),
+                                                      onlyVisibleSpaces: true, visibleSpaceIds: [1],
+                                                      isOnPreferredScreen: false))
+    }
+
+    /// The mirror: a held tab is on the visible Space, so `.nonVisible` must hide it.
+    func testOnlyNonVisibleSpacesHidesHeldTab() {
+        XCTAssertFalse(WindowFilterResolver.shouldShow(ws(isHeldVisibleForTab: true, spaceIds: []), appState(),
+                                                       onlyNonVisibleSpaces: true, visibleSpaceIds: [1],
+                                                       isOnPreferredScreen: true))
+    }
+
     // MARK: - H. Screens
 
     func testOnlyPreferredScreenHidesOffScreenWindow() {
@@ -149,6 +166,13 @@ final class WindowFilterResolverTests: XCTestCase {
     func testOnlyPreferredScreenShowsOnScreenWindow() {
         XCTAssertTrue(WindowFilterResolver.shouldShow(ws(), appState(),
                                                       onlyPreferredScreen: true, isOnPreferredScreen: true))
+    }
+
+    /// A held tab is on the preferred screen (the swap happened there), so the preferred-screen gate must
+    /// not drop it even when the OS reports it off-screen (a Space-less window has no screen to be on).
+    func testOnlyPreferredScreenShowsHeldTab() {
+        XCTAssertTrue(WindowFilterResolver.shouldShow(ws(isHeldVisibleForTab: true), appState(),
+                                                      onlyPreferredScreen: true, isOnPreferredScreen: false))
     }
 
     // MARK: - I. Tabs (macOS native tabs)

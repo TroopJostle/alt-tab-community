@@ -21,7 +21,8 @@ enum WindowServerQuery {
                 level: SLSWindowIteratorGetLevel(iterator),
                 spaceTypeMask: SLSWindowIteratorGetSpaceTypeMask(iterator),
                 title: SLSWindowIteratorCopyTitle(iterator)?.takeRetainedValue() as String? ?? "",
-                bounds: SLSWindowIteratorGetBounds(iterator)
+                bounds: SLSWindowIteratorGetBounds(iterator),
+                tags: SLSWindowIteratorGetTags(iterator)
             ))
         }
         return out

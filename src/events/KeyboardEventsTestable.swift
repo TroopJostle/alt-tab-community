@@ -39,6 +39,17 @@ private func logKeyboardEvent(_ globalId: Int?, _ shortcutState: ShortcutState?,
     }
 }
 
+/// A hold modifier released late, or never delivered at all, leaves the previous session open, and the next
+/// event to arrive is usually the next summon's key-down. Settle that stale session against the tile the
+/// user was looking at BEFORE this event's action can move it: settled after, `nextWindowShortcut` has
+/// already cycled, so the release commits one tile past what was asked and every alt-tab from then on
+/// ping-pongs against a window the user never picked (QA F-01). Run again after the loop, for a session this
+/// very event opened with the modifier already back up.
+private func settleLostHoldRelease() {
+    guard let session = SwitcherSession.current else { return }
+    ControlsTab.shortcuts[Preferences.indexToName("holdShortcut", session.shortcutIndex)]?.settleLostRelease()
+}
+
 private func shouldAbsorbSearchEditingKeyDown(_ event: NSEvent?) -> Bool {
     guard let event, event.type == .keyDown, SwitcherSession.isActive, TilesPanel.shared.isKeyWindow, TilesView.isSearchEditing else {
         return false
@@ -47,6 +58,7 @@ private func shouldAbsorbSearchEditingKeyDown(_ event: NSEvent?) -> Bool {
 }
 
 private func triggerMatchingShortcuts(_ globalId: Int?, _ shortcutState: ShortcutState?, _ keyCode: UInt32?, _ modifiers: NSEvent.ModifierFlags?, _ isARepeat: Bool) -> Bool {
+    settleLostHoldRelease()
     var someShortcutTriggered = false
     for shortcut in ControlsTab.shortcuts.values {
         if shortcut.matches(globalId, shortcutState, keyCode, modifiers) && shortcut.shouldTrigger() {
@@ -56,8 +68,9 @@ private func triggerMatchingShortcuts(_ globalId: Int?, _ shortcutState: Shortcu
                 someShortcutTriggered = true
             }
         }
-        shortcut.redundantSafetyMeasures()
+        shortcut.stopRepeatIfUp()
     }
+    settleLostHoldRelease()
     // TODO if we manage to move all keyboard listening to the background thread, we'll have issues returning this boolean
     // this function uses many objects that are also used on the main-thread. It also executes the actions
     // we'll have to rework this whole approach. Today we rely on somewhat in-order events/actions

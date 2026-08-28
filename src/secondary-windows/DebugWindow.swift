@@ -192,7 +192,11 @@ class DebugWindow: NSPanel {
         Logger.setTap { [weak self] level, message in
             DispatchQueue.main.async { self?.appendEntry(level, message) }
         }
-        // For the debug window we want to receive everything regardless of CLI log level.
+        // For the debug window we want to receive everything regardless of CLI log level. This is now the
+        // whole story: tab-detection decisions used to sit on a separate `--tab-diag` channel that had to be
+        // force-enabled here too, because `open --args` drops arguments when AltTab is already running, so
+        // the forced `.debug` made a capture look complete while the tab decisions were silently missing
+        // (#5785). One channel, one switch.
         Logger.minLevel = .debug
         isListening = true
     }

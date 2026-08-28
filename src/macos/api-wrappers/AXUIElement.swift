@@ -61,7 +61,8 @@ extension AXUIElement {
         return try body()
     }
 
-    // periphery:ignore
+    /// This element's own AXUIElementID. Used to ANCHOR a brute-force sweep near an app's windows instead of
+    /// at id 0, which is what made the inactive-tab scan find anything (`InactiveTabScanPolicy.scanStart`).
     func id() -> AXUIElementID? {
         let pointer = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque()).advanced(by: 0x20)
         let cfDataPointer = pointer.load(as: CFData?.self)
@@ -147,13 +148,18 @@ extension AXUIElement {
                 // This makes it very hard to know what's real. For example, if an app has no MainWindow, it will return .axError. If we cast it to AXUIElement, it will succeed, but the object will have its attributes zero'd
                 // we have to check for .axError, which we map to nil values
                 return nil
+            // AXValueGetValue leaves the out-param UNTOUCHED when it fails, so ignoring its Bool handed back
+            // the zero-initialized value as if the OS had said so: a failed size read became 0×0 and a failed
+            // position read became @0,0 (same zeroing the .axError comment above describes). Live, a new Finder
+            // tab read back `0x0@0,0`, so no thumbnail could be drawn and the switcher showed one tile of empty
+            // pixels until the next read healed it. A failed read is unknown, not zero — say nil.
             case .cgSize:
                 var size = CGSize.zero
-                AXValueGetValue(axValue, .cgSize, &size)
+                guard AXValueGetValue(axValue, .cgSize, &size) else { return nil }
                 return size as? T
             case .cgPoint:
                 var point = CGPoint.zero
-                AXValueGetValue(axValue, .cgPoint, &point)
+                guard AXValueGetValue(axValue, .cgPoint, &point) else { return nil }
                 return point as? T
             case let unknownAXValueType:
                 Logger.error { unknownAXValueType }
@@ -195,31 +201,51 @@ extension AXUIElement {
     /// the only way to reach windows absent from every CGS list: other-Space windows and inactive OS tabs) and
     /// hand it to `inspect`, until `inspect` returns true (it found what it wanted) or the budget elapses.
     /// IPC per id — off the main thread only. The token's id field is the only part rewritten per iteration.
-    private static func bruteForceElements(_ pid: pid_t, _ inspect: (AXUIElement) -> Bool) {
+    ///
+    /// Returns the id the sweep stopped at, so a caller that can be RETRIED resumes instead of re-walking the
+    /// same dead prefix. That matters because the budget is wall-clock while the id space is `UInt64`: a scan
+    /// covers a window of ids, not the space, and restarting always at 0 means every retry inspects exactly the
+    /// ids that already failed. Measured live (2026-07-30): the inactive-tab scan ran 31 times and adopted
+    /// nothing on any of them, because a long-lived Finder keeps its window elements at ids the first 250ms
+    /// never reaches — the same scan adopted 57 in an earlier run where they happened to sit lower.
+    @discardableResult
+    private static func bruteForceElements(_ pid: pid_t, from startId: AXUIElementID = 0,
+                                           _ inspect: (AXUIElement) -> Bool) -> AXUIElementID {
         // 20 bytes: pid (4) + 0 (4) + magic 0x636f636f "coco" (4) + AXUIElementID (8); byte order matters.
         var remoteToken = Data(count: 20)
         remoteToken.replaceSubrange(0..<4, with: withUnsafeBytes(of: pid) { Data($0) })
         remoteToken.replaceSubrange(4..<8, with: withUnsafeBytes(of: Int32(0)) { Data($0) })
         remoteToken.replaceSubrange(8..<12, with: withUnsafeBytes(of: Int32(0x636f636f)) { Data($0) })
         let timer = LightweightTimer()
-        for axUiElementId: AXUIElementID in 0..<AXUIElementID.max {
+        for axUiElementId: AXUIElementID in startId..<AXUIElementID.max {
             remoteToken.replaceSubrange(12..<20, with: withUnsafeBytes(of: axUiElementId) { Data($0) })
             if let candidate = _AXUIElementCreateWithRemoteToken(remoteToken as CFData)?.takeRetainedValue(),
                inspect(candidate) {
-                return
+                return axUiElementId + 1
             }
-            if timer.hasElapsed(milliseconds: bruteForceBudgetMs) { return }
+            if timer.hasElapsed(milliseconds: bruteForceBudgetMs) { return axUiElementId + 1 }
         }
+        return AXUIElementID.max
     }
 
     /// Resolve the AX element for ONE other-Space wid (there is no wid→element API). Returns the INSTANT a
-    /// candidate's window id matches — matching by wid (rather than collecting every window and reading a subrole
-    /// per id) early-exits at the target's index, reaching far higher ids within the budget. Subrole is judged
-    /// downstream by the discriminator; here we only locate.
+    /// candidate is the target's WINDOW element — matching by wid (rather than collecting every window and
+    /// reading a subrole per id) early-exits near the target's index, reaching far higher ids within the
+    /// budget. Subrole is judged downstream by the discriminator; here we only locate — but locating must
+    /// check the ROLE: `_AXUIElementGetWindow` on ANY descendant returns the CONTAINING window's id, so every
+    /// button/toolbar of the target also matches its wid, and a tabbed window's "tab bar" element routinely
+    /// gets a LOWER AXUIElementID than the window element itself. Returning the first wid match handed the
+    /// discriminator that tab bar (role AXTabGroup, subrole nil), which it rightly rejected — so the launch
+    /// scan consistently missed every TABBED window until the first show's rescan got luckier (rec17). The
+    /// role read costs IPC only on the target's own descendants: other elements fail the cheap wid guard.
     static func windowByBruteForce(_ pid: pid_t, _ wid: CGWindowID) -> AXUIElement? {
         var found: AXUIElement?
         bruteForceElements(pid) { candidate in
+            // Cheap wid gate first, so the role read costs IPC only on the target's own descendants; the
+            // root-vs-descendant verdict is the `BruteForceWindowMatch` kernel (#5849).
             guard (try? candidate.cgWindowId()) == wid else { return false }
+            let role = (try? candidate.attributes([kAXRoleAttribute]))?.role
+            guard BruteForceWindowMatch.isTargetWindowRoot(candidateWid: wid, candidateRole: role, targetWid: wid) else { return false }
             found = candidate
             return true
         }
@@ -231,10 +257,15 @@ extension AXUIElement {
     /// through the remote token. A tracked window's child elements resolve to its (excluded) wid, so they're
     /// skipped before the subrole read; only untracked wids pay for it. Returns each match's wid + element +
     /// title; stops once `titles.count` are found.
-    static func untrackedWindowsByBruteForce(_ pid: pid_t, excluding: Set<CGWindowID>, matching titles: [String]) -> [(CGWindowID, AXUIElement, String)] {
+    /// `from` / the returned `nextId` let successive attempts RESUME: this scan is retried per app (see
+    /// `InactiveTabScanPolicy`), and restarting at 0 each time re-inspected the same ids that had already
+    /// failed, so no number of retries could ever reach a long-lived app's windows. The caller owns the cursor.
+    static func untrackedWindowsByBruteForce(_ pid: pid_t, excluding: Set<CGWindowID>, matching titles: [String],
+                                             from startId: AXUIElementID = 0)
+                                             -> (found: [(CGWindowID, AXUIElement, String)], nextId: AXUIElementID) {
         var seen = Set<CGWindowID>()
         var result = [(CGWindowID, AXUIElement, String)]()
-        bruteForceElements(pid) { candidate in
+        let nextId = bruteForceElements(pid, from: startId) { candidate in
             guard let wid = try? candidate.cgWindowId(), wid != 0, !excluding.contains(wid), !seen.contains(wid),
                   let a = try? candidate.attributes([kAXSubroleAttribute, kAXTitleAttribute]),
                   a.subrole == kAXStandardWindowSubrole, let title = a.title, titles.contains(title) else { return false }
@@ -242,7 +273,7 @@ extension AXUIElement {
             result.append((wid, candidate, title))
             return result.count >= titles.count
         }
-        return result
+        return (result, nextId)
     }
 }
 
@@ -267,6 +298,20 @@ extension AXUIElement {
     /// Query the window's AXTabGroup child to detect OS-level tabs.
     /// Returns tab titles if the window has tabs (always ≥ 2), nil otherwise.
     /// `children` should come from the prior `.attributes([..., kAXChildrenAttribute])` call.
+    ///
+    /// **DIRECT children only, deliberately, and fullscreen windows are therefore not read here.** A
+    /// fullscreen window's tab bar is reachable — probed at length, see
+    /// `experimentations/TabbedWindowDetection.swift` — but only unevenly: Finder and Script Editor list the
+    /// containing AXGroup as a child, Terminal and TextEdit do not (their tab bar lives in a separate
+    /// NSToolbarFullScreenWindow that no downward walk reaches, only a coordinate hit-test).
+    ///
+    /// Descending one level was tried and REVERTED. It works, but it buys tab reading for SOME apps and not
+    /// others, and that asymmetry is worse than the gap: a fullscreen active that can suddenly read its tabs
+    /// reaches `matchSiblings`, where nothing stopped it claiming a windowed window's tab (the title matches
+    /// under Finder's duplicate titles, and `positionsCompatible` waives the frame test for fullscreen) —
+    /// a real window hidden, for a feature that is deliberately not needed. Fullscreen grouping is the
+    /// geometry path's job: a fullscreen Space holds one window and its tabs, so the Space invariant plus
+    /// Space-less-ness already identifies them.
     static func tabGroupInfo(_ children: [AXUIElement]?) -> [String]? {
         guard let children else { return nil }
         for child in children {

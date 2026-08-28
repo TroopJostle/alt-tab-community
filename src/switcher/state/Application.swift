@@ -15,6 +15,11 @@ class Application: NSObject {
     var bundleURL: URL?
     var executableURL: URL?
     var icon: CGImage?
+    /// Pixel width of the representation `NSImage` handed us for `icon`. When it is below the
+    /// requested source width, `appIconWithoutPadding` had to upscale, and the tile looks soft.
+    /// Reported in the debug profile: it is the only way to tell a blurry icon caused by a
+    /// low-res source apart from one caused by an undersized `maxPossibleAppIconSize`.
+    var iconSourcePixels: Int?
     var dockLabel: String?
     var focusedWindow: Window? = nil
     var alreadyRequestedToQuit = false
@@ -46,7 +51,9 @@ class Application: NSObject {
     ///   * icon.draw() -> returns nil for some users (could never reproduce it locally)
     ///   * icon.bestRepresentation() > bestRep.draw(in:) -> returns nil for some users (could never reproduce it locally)
     /// MacOS Big Sur also introduced a constant padding around app icons. It was later increased with Tahoe. We have to crop it
-    static func appIconWithoutPadding(_ icon: NSImage?) -> CGImage? {
+    /// Returns the cropped icon, plus the pixel width of the source representation `NSImage` gave us
+    /// (below `sourceWidth` means we upscaled, i.e. the tile will look soft).
+    static func appIconWithoutPadding(_ icon: NSImage?) -> (image: CGImage, sourcePixels: Int)? {
         guard let icon else { return nil }
         let finalWidth = max(TilesPanel.maxPossibleAppIconSize.width, TilesPanel.maxPossibleAppIconSize.height)
         // we hardcode cropping values based on a reference 1024 icon, and depending on the macOS version
@@ -64,7 +71,8 @@ class Application: NSObject {
               let context = CGContext(data: nil, width: Int(finalWidth), height: Int(finalWidth), bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue).union(.byteOrder32Little).rawValue) else { return nil }
         context.interpolationQuality = .high
         context.draw(image, in: CGRect(origin: .zero, size: NSSize(width: finalWidth, height: finalWidth)))
-        return context.makeImage()
+        guard let result = context.makeImage() else { return nil }
+        return (result, cgImage.width)
     }
 
     init(_ runningApplication: NSRunningApplication) {
@@ -78,7 +86,11 @@ class Application: NSObject {
         executableURL = runningApplication.executableURL
         debugId = "(pid:\(state.pid) \(state.bundleIdentifier ?? bundleURL?.absoluteString ?? executableURL?.absoluteString ?? state.localizedName))"
         super.init()
-        Logger.info { self.debugId }
+        // debug, not info: this fires for EVERY running process AltTab tracks, so at launch it printed ~50
+        // lines of daemons and agents that can never appear in the switcher (PowerChime, loginwindow,
+        // AXVisualSupportAgent…). A process listing is not what a bug report needs; `DebugProfile` already
+        // reports the count, and `RunningApplicationsEvents` logs launches and quits.
+        Logger.debug { self.debugId }
         ensureAxUiElement()
         kvObservers = [
             runningApplication.observe(\.activationPolicy, options: [.new]) { [weak self] _, _ in
@@ -92,7 +104,7 @@ class Application: NSObject {
     }
 
     deinit {
-        Logger.info { self.debugId }
+        Logger.debug { self.debugId }
         // `NSRunningApplication` KVO removal can throw NSInternalInconsistencyException
         // ("Failed to register for runningApplicationNotificationCallback") — an Apple bug
         // when the underlying notification XPC service has gone away (e.g. observed app
@@ -119,7 +131,8 @@ class Application: NSObject {
             guard let self, self.icon == nil else { return }
             let r = Application.appIconWithoutPadding(runningApplication.icon)
             DispatchQueue.main.async { [weak self] in
-                self?.icon = r
+                self?.icon = r?.image
+                self?.iconSourcePixels = r?.sourcePixels
             }
         }
     }
@@ -131,6 +144,10 @@ class Application: NSObject {
         let window = Window(self)
         Windows.appendWindow(window)
         focusedWindow = nil
+        // The add/remove pair is logged because the placeholder's LIFECYCLE was the #5849 bug: it is added
+        // while an app's only window looks phantom, and one un-phantom path forgot to remove it, so the app
+        // showed two tiles forever. Nothing recorded either step, so it had to be inferred from the tiles.
+        Logger.debug { "windowless + \(self.runningApplication.localizedName ?? "?") pid=\(self.pid) (no non-phantom window)" }
         App.refreshOpenUiAfterExternalEvent([])
         return window
     }
@@ -138,6 +155,7 @@ class Application: NSObject {
     func removeWindowlessAppWindow() {
         guard let windowlessAppWindow = (Windows.list.first { $0.isWindowlessApp == true && $0.application.pid == self.pid }) else { return }
         Windows.removeWindows([windowlessAppWindow], false)
+        Logger.debug { "windowless - \(self.runningApplication.localizedName ?? "?") pid=\(self.pid)" }
         App.refreshOpenUiAfterExternalEvent([])
     }
 

@@ -36,9 +36,16 @@ enum WindowFilterResolver {
                 !s.isWindowlessApp &&
                 !(hideFullscreen && s.isFullscreen) &&
                 !(hideMinimized && s.isMinimized) &&
-                !(onlyVisibleSpaces && !inAnyVisibleSpace(s, visibleSpaceIds)) &&
-                !(onlyNonVisibleSpaces && inAnyVisibleSpace(s, visibleSpaceIds)) &&
-                !(onlyPreferredScreen && !isOnPreferredScreen()) &&
+                // A held tab (kept visible through the new-tab discovery gap) just backgrounded on the
+                // CURRENT visible Space, so it is Space-less yet belongs on-screen. `isPhantom` already
+                // exempts it, but these Space/screen gates are SEPARATE and would still hide it — the exact
+                // vanish that defeated the hold on the FIRST tab of a window, where no group exists yet to
+                // borrow it a Space (live capture 2026-07-24: `(h)…sp[]` dumped with a `-` prefix). Treat
+                // held as "on the visible Space and preferred screen": shows under `.visible`, hidden under
+                // `.nonVisible`, and never dropped by the preferred-screen gate.
+                !(onlyVisibleSpaces && !s.isHeldVisibleForTab && !inAnyVisibleSpace(s, visibleSpaceIds)) &&
+                !(onlyNonVisibleSpaces && (s.isHeldVisibleForTab || inAnyVisibleSpace(s, visibleSpaceIds))) &&
+                !(onlyPreferredScreen && !s.isHeldVisibleForTab && !isOnPreferredScreen()) &&
                 (separateTabs || !s.isTabbed))
     }
 

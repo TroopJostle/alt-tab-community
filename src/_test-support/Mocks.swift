@@ -18,6 +18,14 @@ extension NSImage {
     }
 }
 
+// Stub so SwitcherSession.swift's Preview-frame cache compiles in the test target. The real enum
+// lives in LightImageView.swift (not in the test target); the session only stores and returns
+// values, so mirroring the cases without the helper methods is enough.
+enum CALayerContents {
+    case cgImage(CGImage?)
+    case pixelBuffer(CVPixelBuffer?)
+}
+
 // Test-target reimplementation of `SettingsSearchIndex`'s inline-registration API. The production
 // type lives in the app target but its `sheetSearchableStrings(forButtonAction:)` references the
 // sheet classes + AppearanceTab/ControlsTab selectors, which would drag the whole settings window

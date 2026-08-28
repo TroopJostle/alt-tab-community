@@ -100,3 +100,101 @@
 //   not individual tab WIDs. Matching tabs to windows must use title comparison.
 //
 // Implementation: see AXUIElement.tabGroupInfo() in src/api-wrappers/AXUIElement.swift
+//
+// MARK: - CORRECTION (probed 2026-07-26/27, macOS 26): in FULLSCREEN it is APP-DEPENDENT
+//
+// "Fullscreen windows expose no readable AXTabGroup" became settled lore in the tab-detection code, and
+// several rules were built to work around it (geometry as the only grouping path for fullscreen; the
+// fullscreen clause in the geometry confirmation gate; the assumption that a fullscreen active can never
+// reach matchSiblings). It is not what macOS does. It was step 1 above — "get kAXChildrenAttribute on the
+// window" — looking only at DIRECT children.
+//
+// Probed by driving a real multi-tab window of each app through Enter Full Screen and dumping the subtree:
+//
+//   app            windowed              fullscreen                     verdict
+//   Finder         AXWindow/AXTabGroup   AXWindow/AXGroup/AXTabGroup    readable
+//   Script Editor  AXWindow/AXTabGroup   AXWindow/AXGroup/AXTabGroup    readable
+//   Terminal       AXWindow/AXTabGroup   (nothing, at any depth)        NOT readable
+//   TextEdit       AXWindow/AXTabGroup   (nothing, at any depth)        NOT readable
+//   Notes          (no native tabs — no "Merge All Windows" either)
+//   Safari         AXWindow/AXSplitGroup/AXTabGroup with 0 AXTabButton — browsers draw their own tabs, so
+//                  this is the expected answer and the >= 2 AXTabButton test already rejects it
+//
+// WHY the split — and the first answer here was WRONG, which is worth keeping. It looked like the tab bar
+// was dropped from the tree in fullscreen ("a titlebar accessory that only some apps re-host"). It is not.
+// Terminal's fullscreen tab bar EXISTS, at the same path as Finder's; a coordinate hit-test lands on it:
+//
+//   AXTabGroup(3 children)  ←  AXGroup(1)  ←  AXWindow(2 children)  ←  AXApplication
+//
+// The AXGroup's PARENT is the window; the window's own children are [AXSplitGroup, AXStaticText] and do not
+// include it. The child→parent link is there, the parent→child link is not, so no downward walk can reach
+// it at any depth. Ruled out as explanations:
+//   - a DELAY: 12s of retries, nothing;
+//   - a SEPARATE overlay window: the app has exactly one AXWindow in fullscreen;
+//   - the bar entering the tree only once REVEALED: gliding the pointer to the top edge changed nothing;
+//   - a DIFFERENT children list: AXChildrenInNavigationOrder and AXVisibleChildren miss it too;
+//   - LAZY generation: a hit-test does not add it to kAXChildren afterwards, on a fresh handle either.
+// Finder and Script Editor list the group properly, which is the whole difference between the two columns.
+//
+// Accessibility Inspector DOES show that tab bar under the window, hosted by an NSToolbarFullScreenWindow —
+// a separate AppKit window for the fullscreen toolbar. Inspector builds its hierarchy from the ANCESTRY of
+// the element you pick, which is why it can show what a downward walk cannot reach. The toolbar host is not
+// in kAXWindows (1 window) nor among the application's children (3: the window, the menu bar, and an
+// AXFunctionRowTopLevelElement).
+//
+// Hit-testing is thus the only route, and it is a VIABLE one — better than first assumed. It works from
+// coordinates computed off the window's own frame, with the pointer parked elsewhere, and the result can be
+// proven to belong to the window:
+//
+//   fullscreen window frame (0,36,2048,1116) → hit-test the strip just above the content origin
+//   downward walk: nothing        hit-test: ["~", "~"]      (mouse at the bottom of the screen)
+//
+// Proof of ownership: walk the hit element's parents to the enclosing AXWindow and compare _AXUIElementGetWindow
+// against the window you asked about; a hit on some other app's window (or another window occluding the
+// strip) fails that test and yields nothing rather than the wrong tabs.
+//
+// AND THE PRIVATE APIs NAME THAT WINDOW, which removes the guesswork. SLSCopyAssociatedWindows on the
+// fullscreen wid returns the toolbar window alongside it (item 9 above says it "returns only the queried
+// window itself" — true for a WINDOWED window, where no toolbar window exists; in fullscreen it returns
+// both):
+//
+//   SLSCopyAssociatedWindows(35416) → [35420, 35416]
+//     wid=35420  bounds=(0,0 2048x68)      ← the toolbar / tab-bar strip
+//     wid=35416  bounds=(0,36 2048x1116)   ← the fullscreen content window
+//
+// So the full chain is: fullscreen wid → SLSCopyAssociatedWindows → the other wid → its EXACT bounds from
+// CGWindowList → hit-test inside them → walk the hit element's parents to an AXWindow → require that wid to
+// be ours → read the AXTabGroup passed on the way. Verified end to end (2026-07-27):
+//
+//   Terminal   fullscreen: downward walk nothing → chain ["~", "~", "~"]
+//   TextEdit   fullscreen: downward walk nothing → chain ["Untitled 4", "Untitled", "Untitled 2", ...]
+//   Finder     fullscreen: downward walk works   → chain agrees
+//   all three, WINDOWED: the association has one entry, and the chain correctly returns nothing
+//
+// Sample SEVERAL points inside the strip: it overlaps the content window (68 tall, content starts at 36),
+// so its centre can land in a transparent region where the hit-test returns the window underneath. A miss
+// at one point is not a verdict — that mistake made the first version of this chain report nothing.
+//
+// NOT implemented in AltTab. Remaining costs, for whoever picks it up: it needs the window ON SCREEN (a
+// fullscreen window on another Space fails the wid check and yields nothing — safe, but no answer), and it
+// spends one CGS call plus up to a dozen AX hit-tests per fullscreen window per read.
+//
+// METHOD: the "titlebar accessory" story came from a probe whose Terminal window had only ONE tab — the
+// screenshot showed a single title pill. Verify the SETUP produced the state you meant to measure before
+// concluding anything from an empty result.
+// Nor is there any tab-related ATTRIBUTE on the window to fall back on — the fullscreen window's attribute
+// list contains none — so the element tree is the only route either way.
+//
+// NOT ADOPTED. Descending one level into AXGroup children was written and reverted: it works, but it buys
+// fullscreen tab reading for Finder and Script Editor and not for Terminal and TextEdit, and that asymmetry
+// is worse than the gap. A fullscreen active that can suddenly read its tabs reaches `matchSiblings`, where
+// nothing stopped it claiming a windowed window's tab (the title matches under Finder's duplicate titles,
+// and `positionsCompatible` waives the frame test for fullscreen) — a real window hidden, for a capability
+// the model does not need: fullscreen grouping is the geometry path's job, since a fullscreen Space holds
+// one window and its tabs. See the doc comment on `AXUIElement.tabGroupInfo`.
+//
+// What this correction changes is the REASONING, not the code: "fullscreen exposes no readable AXTabGroup"
+// is not a fact about macOS, it is a fact about a downward walk. The rules built on it still earn their
+// keep (Terminal and TextEdit really do expose nothing reachable), so this is not a licence to delete them.
+// See TabGroupResolverSpecs.md and TestScenarioSimulatorSpecs.md.
+//

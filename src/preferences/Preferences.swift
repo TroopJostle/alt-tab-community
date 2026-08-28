@@ -41,7 +41,7 @@ class Preferences {
             "updatePolicy": UpdatePolicyPreference.manual.indexAsString,
             "crashPolicy": CrashPolicyPreference.ask.indexAsString,
             "hideThumbnails": "false",
-            "hideSpaceNumberLabels": "false",
+            "hideSpaceNumberLabels": "true",
             "hideStatusIcons": "false",
             "previewFocusedWindow": "false",
             "captureWindowsInBackground": "true",
@@ -317,6 +317,20 @@ class Preferences {
         return CachedUserDefaults.bool(indexToName("previewFocusedWindowOverride", index))
     }
 
+    /// captures aren't tied to a specific shortcut, so anything sized or routed for Preview
+    /// must consider every slot's effective setting
+    static var anyShortcutUsesPreview: Bool {
+        (0...maxShortcutCount).contains { effectivePreviewSelectedWindow($0) }
+    }
+
+    /// Whether any shortcut's effective settings display window captures at all: the Thumbnails style
+    /// (tile screenshots) and/or the Preview overlay (whose instant first frame upscales the stored
+    /// thumbnail). When neither is configured, stored images would never be shown, so all capture work
+    /// is skipped and no image RAM is held.
+    static var anyShortcutShowsWindowCaptures: Bool {
+        anyShortcutUsesPreview || (0...maxShortcutCount).contains { effectiveAppearanceStyle($0) == .thumbnails }
+    }
+
     /// Which Screen-Recording-dependent features any shortcut's effective settings rely on: the
     /// Thumbnails appearance style (window screenshots) and/or the "preview selected window" overlay.
     /// These are the only features needing the permission, so when none are configured the menubar
@@ -366,10 +380,7 @@ class Preferences {
     }
 
     static func archiveShortcut(_ shortcut: Shortcut?) -> Data {
-        if #available(macOS 10.13, *) {
-            return try! NSKeyedArchiver.archivedData(withRootObject: shortcut ?? emptyShortcut, requiringSecureCoding: true)
-        }
-        return NSKeyedArchiver.archivedData(withRootObject: shortcut ?? emptyShortcut)
+        try! NSKeyedArchiver.archivedData(withRootObject: shortcut ?? emptyShortcut, requiringSecureCoding: true)
     }
 
     static func shortcutStorage(_ shortcut: Shortcut?, _ stringRepresentation: String?) -> [String: Any] {

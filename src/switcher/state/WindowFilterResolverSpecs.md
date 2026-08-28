@@ -34,6 +34,15 @@ The predicate, in order:
 
 Precedence matters: `isPhantom` wins over everything (even a would-be-shown windowless row).
 
+**A HELD tab counts as "on the visible Space and on the preferred screen"** (`isHeldVisibleForTab`). A tab
+kept visible through the new-tab discovery gap is Space-less — its 1326 has landed — yet it just backgrounded
+on the CURRENT Space and belongs on screen for the length of the swap. `isPhantom` already exempts it, but
+these Space and screen gates are SEPARATE and hid it anyway: that is the FIRST-tab vanish (2026-07-24), where
+no group exists yet to borrow the tab a Space, so the hold was defeated by the very filter it had no reason
+to meet. It is fixed HERE, at the display layer, and deliberately not by lending the model a Space — that was
+tried and broke reducer idempotence. So: shown under `.visible`, hidden under `.nonVisible` (it IS on the
+visible Space, so the mirror must agree), and never dropped by the preferred-screen gate.
+
 ## Test scenarios
 
 Mirrors `WindowFilterResolverTests.swift` 1:1. Each test flips one knob from an all-permissive baseline.
@@ -65,9 +74,15 @@ Mirrors `WindowFilterResolverTests.swift` 1:1. Each test flips one knob from an 
 ### G. Spaces
 - **testOnlyVisibleSpacesHidesWindowNotInVisibleSpace** / **testOnlyVisibleSpacesShowsWindowInVisibleSpace** — `.visible` keeps only windows in a visible space.
 - **testOnlyNonVisibleSpacesHidesWindowInVisibleSpace** — `.nonVisible` excludes windows in a visible space.
+- **testOnlyVisibleSpacesShowsSpacelessHeldTab** — the first-tab vanish: a held tab is Space-less but just
+  backgrounded on the current Space, so `.visible` must still show it.
+- **testOnlyNonVisibleSpacesHidesHeldTab** — the mirror, so the exemption can't show the same tab under both
+  settings.
 
 ### H. Screens
 - **testOnlyPreferredScreenHidesOffScreenWindow** / **testOnlyPreferredScreenShowsOnScreenWindow** — `.showingAltTab` keeps only windows on the preferred screen.
+- **testOnlyPreferredScreenShowsHeldTab** — a held tab is never dropped by the screen gate either (same
+  fix, third gate: the Space-less tab has no Space to resolve a screen from).
 
 ### I. Tabs (macOS native tabs)
 - **testNonFrontmostTabHiddenWhenGrouping** — a non-frontmost tab is hidden when tabs are grouped.

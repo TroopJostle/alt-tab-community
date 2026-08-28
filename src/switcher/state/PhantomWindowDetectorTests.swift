@@ -107,4 +107,26 @@ final class PhantomWindowDetectorTests: XCTestCase {
         XCTAssertFalse(PhantomWindowDetector.cgsVerdict(ws(isMinimized: true, spaceIds: []), appState(),
             inVisibleList: false, inAllList: false, visibleSpaceIds: []))
     }
+
+    // MARK: - C. The focused window is never a weak-signal phantom (#5849)
+
+    func testFocusedWindowIsNotWeakSignalPhantom() {
+        // Slack reopened from the Dock: CGS still tags the window invisible for seconds after it is on
+        // screen AND focused. Same inputs as testWeakSignalOnVisibleSpaceIsPhantom, plus isFocused.
+        XCTAssertFalse(PhantomWindowDetector.cgsVerdict(ws(spaceIds: [1]), appState(),
+            inVisibleList: false, inAllList: true, visibleSpaceIds: [1], isFocused: true))
+    }
+
+    func testUnfocusedWeakSignalStaysPhantom() {
+        // The exemption must not widen the weak signal for everything else (alpha=0 Outlook reminders).
+        XCTAssertTrue(PhantomWindowDetector.cgsVerdict(ws(spaceIds: [1]), appState(),
+            inVisibleList: false, inAllList: true, visibleSpaceIds: [1], isFocused: false))
+    }
+
+    func testFocusedButMissingFromAllListsStaysPhantom() {
+        // The exemption is weak-signal only: a wid CGS dropped from every list is gone, whatever a stale
+        // focus record says. Resurrecting it here would undo #5714.
+        XCTAssertTrue(PhantomWindowDetector.cgsVerdict(ws(spaceIds: []), appState(),
+            inVisibleList: false, inAllList: false, visibleSpaceIds: [], isFocused: true))
+    }
 }

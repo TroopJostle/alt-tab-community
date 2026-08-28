@@ -13,6 +13,8 @@ class SleepWakeEvents {
         Logger.info { "" }
         reEnableAllTaps()
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) { reEnableAllTaps() }
+        // the WindowServer puts the screen's windows back a beat later, as order-ins that are not raises (#5936)
+        TrackedWindowStateBridge.dispatch(.systemReshow(now: ProcessInfo.processInfo.systemUptime, source: .wake))
     }
 
     static func reEnableAllTaps() {

@@ -6,6 +6,12 @@ class KeyRepeatTimer {
     static var timer = DispatchSource.makeTimerSource(queue: BackgroundWork.repeatingKeyQueue.strongUnderlyingQueue)
     static var timerIsSuspended = true
     static var currentTimerShortcutName: String?
+    /// `systemUptime` when the current timer was armed, and its initial-delay — captured so `handleEvent` can
+    /// gate each artificial repeat on how long the panel has actually been VISIBLE
+    /// (`KeyRepeatTimerTestable.shouldApplyArtificialRepeat`), rather than blindly firing at the timer's
+    /// arm-relative schedule.
+    static var armedAt: TimeInterval = 0
+    static var currentInitialDelay: TimeInterval = 0
 
     static func startRepeatingKeyPreviousWindow() {
         if let shortcut = ControlsTab.shortcuts["previousWindowShortcut"],
@@ -45,6 +51,8 @@ class KeyRepeatTimer {
         // reading these user defaults every time guarantees we have the latest value, if the user has updated those
         let repeatRate = ticksToSeconds(CachedUserDefaults.globalString("KeyRepeat") ?? "6")
         let initialDelay = ticksToSeconds(CachedUserDefaults.globalString("InitialKeyRepeat") ?? "25")
+        armedAt = ProcessInfo.processInfo.systemUptime
+        currentInitialDelay = initialDelay
         Logger.debug { "\(currentTimerShortcutName) repeatRate:\(repeatRate)s initialDelay:\(initialDelay)s" }
         timer.schedule(deadline: .now() + initialDelay, repeating: repeatRate, leeway: .milliseconds(Int(repeatRate * 1000 / 10)))
         timer.setEventHandler { handleEvent(atShortcut, block) }
@@ -56,9 +64,13 @@ class KeyRepeatTimer {
         DispatchQueue.main.async {
             if atShortcut.state == .up || (atShortcut.scope == .global && holdModifierIsReleased()) {
                 stopTimerForRepeatingKey(atShortcut.id)
-            } else {
+            } else if KeyRepeatTimerTestable.shouldApplyArtificialRepeat(now: ProcessInfo.processInfo.systemUptime,
+                armedAt: armedAt, panelBecameVisibleAt: SwitcherSession.current?.panelBecameVisibleAt,
+                panelShownAt: SwitcherSession.current?.panelShownAt, initialDelay: currentInitialDelay) {
                 block()
             }
+            // else: the panel hasn't been VISIBLE for the initial-delay grace yet (a slow show swallowed it);
+            // skip this tick but keep the timer running so a later tick re-checks once the grace truly elapses.
         }
     }
 

@@ -45,7 +45,11 @@ class App: AppCenterApplication {
     }
 
     /// we put application code here which should be executed on init() and Preferences change
+    /// The switcher UI only exists once permissions are granted. Activating a license through the
+    /// `alt-tab://activate` url launches the app and can land its callback before that, so we bail
+    /// instead of resetting a UI that isn't built yet (`TilesView.reset` traps on `TilesPanel.shared`).
     static func resetPreferencesDependentComponents() {
+        guard TilesPanel.shared != nil else { return }
         TilesView.reset()
     }
 
@@ -58,7 +62,7 @@ class App: AppCenterApplication {
     }
 
     static func hideUi(_ keepPreview: Bool = false) {
-        Logger.info { "active:\(SwitcherSession.isActive)" }
+        Logger.debug { "active:\(SwitcherSession.isActive)" }
         guard SwitcherSession.current != nil else { return } // already hidden
         SwitcherSession.current = nil
         KeyboardEvents.updateEscapeAbsorptionTap() // session closed: stop tapping keyDown (#5766)
@@ -69,7 +73,7 @@ class App: AppCenterApplication {
         Tooltips.hideAll()
         hideTilesPanelWithoutChangingKeyWindow()
         if !keepPreview {
-            PreviewPanel.shared.orderOut(nil)
+            PreviewPanel.hide()
         }
         MainMenu.toggle(true)
     }
@@ -235,7 +239,7 @@ class App: AppCenterApplication {
                 moveCursorToSelectedWindow(window)
             }
         } else {
-            PreviewPanel.shared.orderOut(nil)
+            PreviewPanel.hide()
         }
     }
 
@@ -259,6 +263,7 @@ class App: AppCenterApplication {
         guard SwitcherSession.isActive else { return }
         let preservedScrollOrigin = preserveScrollPosition ? TilesView.currentScrollOrigin() : nil
         Windows.updateSelectedWindow()
+        Windows.logTileDump("refreshUi")
         guard SwitcherSession.isActive else { return }
         TilesPanel.shared.updateContents(preservedScrollOrigin)
         guard SwitcherSession.isActive else { return }
@@ -272,6 +277,9 @@ class App: AppCenterApplication {
     static func showUiOrCycleSelection(_ shortcutIndex: Int, _ forceDoNothingOnRelease_: Bool) {
         let session = SwitcherSession.current ?? {
             let new = SwitcherSession()
+            // The window set as it stood at the press. Only something ABSENT from it can be a newcomer that
+            // the default pick steps over — see `SwitcherSession.windowIdsAtSummon`.
+            new.windowIdsAtSummon = Set(Windows.list.map { $0.id })
             SwitcherSession.current = new
             KeyboardEvents.updateEscapeAbsorptionTap() // session opened: enable Esc keyDown tap if bound (#5585)
             return new
@@ -325,6 +333,8 @@ class App: AppCenterApplication {
         guard SwitcherSession.isActive else { return }
         TilesPanel.shared.show()
         WindowThumbnails.previewSelectedIfNeeded()
+        // enqueue the full-res Preview fetches BEFORE the thumbnail pass below, so the Preview sharpens first
+        WindowThumbnails.fetchPreviewFrames()
         if TilesView.isSearchEditing {
             TilesView.enableSearchEditing()
         }
@@ -335,9 +345,18 @@ class App: AppCenterApplication {
 
     static func checkIfShortcutsShouldBeDisabled(_ activeWindow: Window?, _ activeApp: Application?) {
         let app = activeWindow?.application ?? activeApp!
+        // The `.whenFullscreen` rule must reflect whether the frontmost app is CURRENTLY showing a fullscreen
+        // window. Don't trust only the window the triggering event carried: it is often nil or stale (RDP's
+        // fullscreen session window can't be AX-acquired, so `focusedWindow` reads nil; an activation fires
+        // before geometry lands). Deriving `isFullscreen` from that alone let the many call sites disagree, so
+        // the toggle flapped and a re-check re-enabled the shortcut mid-fullscreen — AltTab then grabbed Cmd-Tab
+        // inside a fullscreen remote session (#5842, same class as #5228). Read it from the model instead: the
+        // app has a fullscreen window on the current Space. Any trigger now computes the same verdict.
+        let isFullscreen = activeWindow?.isFullscreen == true
+            || Windows.list.contains { $0.application.pid == app.pid && $0.isFullscreen && $0.spaceIds.contains(Spaces.currentSpaceId) }
         let shortcutsShouldBeDisabled = ExceptionMatcher.disablesShortcuts(
             app.state,
-            isFullscreen: activeWindow?.isFullscreen ?? false,
+            isFullscreen: isFullscreen,
             exceptions: Preferences.exceptions)
         KeyboardEvents.toggleGlobalShortcuts(shortcutsShouldBeDisabled)
         if shortcutsShouldBeDisabled && SwitcherSession.isActive {
@@ -365,7 +384,25 @@ class App: AppCenterApplication {
         ScreenLockEvents.observe()
         SleepWakeEvents.observe()
         Applications.initialDiscovery()
+        // The one initial window inventory; later ones ride events + switcher shows. It belongs here, not in
+        // the WindowServer tap: the tap is installed before the permission gate, and this needs `Spaces.refresh`
+        // to have run (the sweep bails on an empty Space list). Deferred a beat so it doesn't compete with the
+        // rest of launch.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            Applications.manuallyRefreshAllWindows()
+            // Seed the MRU from screen stacking HERE, off the critical path, rather than only on the first
+            // summon: the query blocks, so its answer lands after that summon's first render and the user
+            // watches the list re-order. Seeded now, the first summon's own call finds nothing to change and
+            // draws nothing twice. It still runs there, for the windows this pass could not see yet.
+            Windows.sortByLevel()
+        }
         KeyboardEvents.addEventHandlers()
+        // Evaluate the "ignore shortcuts" exception for whatever app is already frontmost at launch (#5842):
+        // no didActivateApplication fires for it, so without this an app blacklisted with ignore=.always keeps
+        // AltTab's shortcut registered after an auto-update relaunch until the user switches away and back.
+        if let frontmostPid = Applications.frontmostPid, let frontmostApp = Applications.findOrCreate(frontmostPid, false) {
+            checkIfShortcutsShouldBeDisabled(frontmostApp.focusedWindow, frontmostApp)
+        }
         CursorEvents.observe()
         TrackpadEvents.observe()
         CliEvents.observe()
@@ -407,6 +444,14 @@ extension App: NSApplicationDelegate {
         // if a queued discovery block drains re-entrantly before this runs, it traps on the nil queue (#5819).
         // preStart just allocates queues and depends on nothing, so it's safe at the very top.
         BackgroundWork.preStart()
+        // Same reasoning as the queues above: a preference the user never changed lives only in the
+        // registration domain, so reading one before `registerDefaults()` traps on the force-unwrap in
+        // `CachedUserDefaults.getThenConvertOrReset`. The "move to /Applications" modal below drains the
+        // main queue, and the crash-report attachment delegate hops to main there to build the debug
+        // profile, which reads `showOnScreen` / `appearanceStyle`. Migrations must keep running before
+        // `registerDefaults()` (they read raw plist values), which `initialize()` already guarantees.
+        // This only touches UserDefaults + TIS (main-thread), so it depends on nothing below.
+        Preferences.initialize()
         // Handle the "move to /Applications" prompt before anything else sets up the model. It runs a modal
         // alert (and may relaunch + exit), both of which pump the main run loop, so it must come before the
         // WindowServer tap below: otherwise the tap's queued window discovery drains re-entrantly during the
@@ -422,7 +467,6 @@ extension App: NSApplicationDelegate {
         // independent of whether the user has granted AX.
         WindowServerEvents.observe()
         AXUIElement.setGlobalTimeout()
-        Preferences.initialize()
         PreferencesPersistenceCheck.runInBackground()
         SystemPermissions.ensurePermissionsAreGranted()
     }

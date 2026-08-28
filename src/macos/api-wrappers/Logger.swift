@@ -31,6 +31,17 @@ enum LogLevel: Int, Comparable {
 class Logger {
     static let flag = "--logs="
     static var minLevel: LogLevel = .error
+    /// Is `.debug` being emitted? Callers use this to skip building an expensive line (the per-show tile
+    /// dump walks every window) rather than to open a second channel.
+    ///
+    /// There used to be one: `--tab-diag`, a parallel `TABDIAG` stream bypassing `minLevel`, on the theory
+    /// that tab diagnostics had to be isolated from the `--logs=debug` firehose. It cost more than it
+    /// bought. A reporter running `--logs=debug` got the firehose and NONE of the tab decisions, which is
+    /// the worst pairing available; and `open --args` drops arguments when AltTab is already running, so
+    /// "relaunch with --tab-diag" silently produced a capture that merely looked complete (#5785) — which is
+    /// why the Debug window force-enabled the flag anyway. The firehose was one line (every raw WindowServer
+    /// notification); that line is now gated instead, and there is one channel.
+    static var debugEnabled: Bool { minLevel <= .debug }
     private static var tap: ((LogLevel, String) -> Void)?
     private static let ansiReset = "\u{001B}[0m"
     private static let writeQueue = DispatchQueue(label: "Logger.writeQueue", qos: .utility)

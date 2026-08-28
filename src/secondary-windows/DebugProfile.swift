@@ -22,6 +22,7 @@ class DebugProfile {
             // app
             ("App preferences", appPreferences()),
             ("Applications", String(Applications.list.count)),
+            ("App icons", appIcons()),
             ("Windows", String(Windows.list.count)),
             // os
             ("OS architecture", Sysctl.run("hw.machine")),
@@ -41,6 +42,22 @@ class DebugProfile {
             ("Resource utilization", resourcesUtilization()),
         ]
         return listLevel1(tuples)
+    }
+
+    /// Blurry app icons are always a resolution mismatch somewhere in the chain
+    /// `NSImage rep -> rasterized bitmap -> layer size in points -> device pixels`. Printing the whole
+    /// chain tells us in one line which link is short: `bitmap` below `displayed * scale` means
+    /// `maxPossibleAppIconSize` was computed too small, while a low `sources` means `NSImage` only had
+    /// small representations and we upscaled them.
+    private static func appIcons() -> String {
+        let displayed = TileView.iconSize().width
+        let scale = NSScreen.preferred.backingScaleFactor
+        let sources = Applications.list.compactMap { $0.iconSourcePixels }.sorted()
+        return listLevel3([
+            ("bitmap", "\(Int(TilesPanel.maxPossibleAppIconSize.width))px"),
+            ("displayed", "\(Int(displayed))pt @\(String(format: "%.2f", scale))x = \(Int(displayed * scale))px"),
+            ("sources", sources.isEmpty ? "none" : "min \(sources.first!)px, max \(sources.last!)px"),
+        ])
     }
 
     private static func listLevel1(_ tuples: [(String, String)]) -> String {

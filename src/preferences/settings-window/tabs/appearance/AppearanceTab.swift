@@ -32,11 +32,26 @@ class IllustratedImageThemeView: ClickHoverImageView {
     /// Loads an illustration from the bundle without going through `NSImage(named:)`'s global
     /// named cache (which never releases). Pairs with `cacheMode = .never` so the per-image scaled
     /// bitmap cache is also disabled. Lets ARC reclaim the bitmap when no view holds the image.
+    ///
+    /// The bundled file is deterministic, but the *load* isn't: the bundle lookup and the file open
+    /// both touch the filesystem and can fail transiently (Sparkle swapping the `.app` mid-update,
+    /// app-translocation I/O hiccups, file-descriptor exhaustion). A crash report (SIGTRAP on the
+    /// force-unwrap this used to feed) proved it happens in the wild, so we retry once: a one-off
+    /// blip resolves to the real image rather than nil.
     static func loadIllustration(_ name: String) -> NSImage? {
-        guard let path = Bundle.main.path(forResource: "\(name)@2x", ofType: "heic") else { return nil }
-        let image = NSImage(contentsOfFile: path)
-        image?.cacheMode = .never
-        return image
+        guard let path = Bundle.main.path(forResource: "\(name)@2x", ofType: "heic") else {
+            Logger.error { "illustration missing from bundle: \(name)" }
+            return nil
+        }
+        for attempt in 1...2 {
+            if let image = NSImage(contentsOfFile: path) {
+                image.cacheMode = .never
+                return image
+            }
+            Logger.warning { "illustration load failed (attempt \(attempt)): \(name)" }
+        }
+        Logger.error { "illustration unavailable after retry: \(name)" }
+        return nil
     }
 
     init(_ style: AppearanceStylePreference, _ width: CGFloat) {
@@ -44,7 +59,12 @@ class IllustratedImageThemeView: ClickHoverImageView {
         // We will implement it later; for now, use the light theme.
         let theme = "light"
         let imageName = IllustratedImageThemeView.getConcatenatedImageName(style, theme)
-        let imageView = NSImageView(image: IllustratedImageThemeView.loadIllustration(imageName)!)
+        // `loadIllustration` retries a transient miss, so it should virtually always return the real
+        // image. Still don't force-unwrap: a persistent failure must degrade to a blank tile, not
+        // crash the whole app when the user opens the Customize sheet (matches the other call sites,
+        // which assign the optional straight to `.image`).
+        let imageView = NSImageView()
+        imageView.image = IllustratedImageThemeView.loadIllustration(imageName)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.imageScaling = .scaleProportionallyUpOrDown
         imageView.wantsLayer = true
