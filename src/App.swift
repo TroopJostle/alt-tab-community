@@ -421,12 +421,6 @@ class App: AppCenterApplication {
             pendingShowSettingsWindow = false
             showSettingsWindow()
         }
-        #if DEBUG
-        QAMenu.shared = QAMenu()
-        QAMenu.shared?.orderFront(nil)
-        if QAMenu.openSettingsOnLaunch { App.showSettingsWindow() }
-        if QAMenu.graphEnabled { DebugMenu.setEnabled(true) }
-        #endif
         UsageStats.prune()
         Logger.info { "Finished launching AltTab" }
     }

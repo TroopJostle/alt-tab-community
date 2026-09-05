@@ -16,8 +16,8 @@ final class DebugMenu: NSPanel {
         let read: () -> Double
     }
 
-    // Single entry point, driven by the QAMenu "Live queue graph" checkbox (and restored on launch
-    // when previously left on). `on` creates+shows+starts; `off` stops all sampling and hides.
+    // Programmatic entry point for the live queue graph. `on` creates, shows, and starts it;
+    // `off` stops all sampling and hides it.
     static func setEnabled(_ on: Bool) {
         if on {
             if shared == nil { shared = DebugMenu(makeSamplers()) }

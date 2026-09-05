@@ -94,8 +94,8 @@ enum PreferencesPersistenceCheck {
     }
 
     #if DEBUG
-    /// QA hook (wired into `QAMenu`): show either dialog variant on demand, using the real
-    /// preferences-plist path, without having to actually symlink or lock a file.
+    /// Debug hook: show either dialog variant on demand using the real preferences-plist path,
+    /// without having to actually symlink or lock a file.
     static func debugShowDialog(symlinked: Bool) {
         let path = "\(preferencesDirectory())/\(App.bundleIdentifier).plist"
         showDialog(symlinkedPaths: symlinked ? [path] : [], unwritablePaths: symlinked ? [] : [path])

@@ -53,26 +53,7 @@ class Menubar {
         // invalidates NSStatusBarContentView mid-FBS-scene-update — `_NSDetectedLayoutRecursion`.
         applyMenubarIconPreferences()
         observeRemovalFromMenubar()
-        #if DEBUG
-        installQAMenuMiddleClickMonitor()
-        #endif
     }
-
-    #if DEBUG
-    private static var qaMenuMiddleClickMonitor: Any?
-
-    // NSStatusBarButton doesn't forward `.otherMouseDown` to its action even when added to
-    // `sendAction(on:)`. A local event monitor sees the click before the button can swallow it.
-    private static func installQAMenuMiddleClickMonitor() {
-        qaMenuMiddleClickMonitor = NSEvent.addLocalMonitorForEvents(matching: .otherMouseDown) { event in
-            guard event.buttonNumber == 2,
-                  let buttonWindow = statusItem?.button?.window,
-                  event.window === buttonWindow else { return event }
-            QAMenu.toggleVisibility()
-            return nil
-        }
-    }
-    #endif
 
     // The callout is only useful when the user lacks Screen Recording AND has settings that need it
     // (Thumbnails style or window previews). Users who skipped the permission but use neither aren't
