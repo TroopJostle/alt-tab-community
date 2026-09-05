@@ -31,7 +31,7 @@ class AppCenterCrash: NSObject {
     func confirmationHandler(_ errorReports: [ErrorReport]) -> Bool {
         initNecessaryFacilities()
         // Defer the modal NSAlert to the next runloop tick. AppCenter can call this handler while
-        // launch UI (QA Menu, Settings) is still being laid out by the WindowServer; running a
+        // launch UI (such as Settings) is still being laid out by the WindowServer; running a
         // nested modal run loop on top of partially-displayed windows triggers
         // _NSDetectedLayoutRecursion when AppKit re-enters _setFrameCommon for those windows
         // (compounded by `App.shared.activate(ignoringOtherApps: true)` inside checkIfShouldSend,
